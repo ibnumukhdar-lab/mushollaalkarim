@@ -47,10 +47,15 @@
     <h2 class="bagian" id="program">Pilih Program</h2>
     <div class="jaring tiga" style="margin-bottom:1.4rem">
         {{-- Program bawaan musholla --}}
+        @php
+            $keteranganMakan = $biayaMakan > 0
+                ? ', rata-rata Rp ' . number_format($biayaMakan, 0, ',', '.') . ' per hari (minimal 10 porsi)'
+                : '';
+        @endphp
         <div class="kartu">
             <div class="tanggal">Program Harian</div>
             <h3>Infaq Makan Gratis</h3>
-            <p>Makan siang gratis bagi jamaah yang hadir sholat zuhur di musholla@if ($biayaMakan > 0), rata-rata Rp {{ number_format($biayaMakan, 0, ',', '.') }} per hari (minimal 10 porsi)@endif.</p>
+            <p>Makan siang gratis bagi jamaah yang hadir sholat zuhur di musholla{{ $keteranganMakan }}.</p>
             <p style="margin-top:.7rem">Terkumpul <strong>Rp {{ number_format($makanGratis, 0, ',', '.') }}</strong></p>
             <p style="margin-top:.6rem">
                 <a class="tombol-kecil pemicu-program" href="#formInfaq" data-program="Infaq Makan Gratis">Infaq untuk program ini</a>
