@@ -224,6 +224,12 @@
             padding: .9rem 1.1rem; border-radius: 12px; margin-bottom: 1.2rem; font-size: .9rem;
         }
         .kosong { color: var(--tinta-muda); font-style: italic; }
+        .tombol-kecil {
+            display: inline-flex; align-items: center; gap: .3rem; font-size: .8rem; font-weight: 600;
+            padding: .35rem .7rem; border-radius: 9px; background: var(--hijau-muda); color: var(--hijau-tua);
+            white-space: nowrap;
+        }
+        .tombol-kecil:hover { background: #dcece3; text-decoration: none; }
 
         /* ================= kaki ================= */
         footer.situs { background: var(--hijau-tua); color: #dbe9e1; padding: 2rem 0 2.2rem; font-size: .87rem; }

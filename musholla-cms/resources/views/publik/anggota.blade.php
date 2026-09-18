@@ -17,6 +17,17 @@
         </div>
     @endif
 
+    @if (session('profil_tersimpan'))
+        <div class="pesan-sukses">
+            <strong>Perubahan tersimpan.</strong>
+            @if (session('profil_tersimpan') === 'sandi')
+                Nama, nomor WhatsApp, dan sandi Anda sudah diperbarui.
+            @else
+                Nama dan nomor WhatsApp Anda sudah diperbarui.
+            @endif
+        </div>
+    @endif
+
     <div class="pahlawan">
         <h1>Assalamu'alaikum, {{ $namaTampil }}</h1>
         <p>Anda terdaftar sebagai <strong>subscriber</strong> Musholla Al Karim.</p>
@@ -29,7 +40,10 @@
 
     <div class="jaring dua">
         <div class="kartu">
-            <h3>Data akun</h3>
+            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">
+                <h3 style="margin:0;margin-right:auto">Data akun</h3>
+                <a href="/anggota/profil" class="tombol-kecil">Ubah profil</a>
+            </div>
             <table style="width:100%;font-size:.9rem;border-collapse:collapse">
                 <tr><td style="padding:.3rem 0;color:var(--tinta-muda)">Nama</td><td>{{ $namaTampil }}</td></tr>
                 <tr><td style="padding:.3rem 0;color:var(--tinta-muda)">Email</td><td>{{ $anggota->email }}</td></tr>

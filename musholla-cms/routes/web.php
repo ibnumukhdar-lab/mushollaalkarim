@@ -32,6 +32,8 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/anggota', [AnggotaController::class, 'beranda'])->name('anggota');
+    Route::get('/anggota/profil', [AnggotaController::class, 'formProfil'])->name('profil');
+    Route::post('/anggota/profil', [AnggotaController::class, 'simpanProfil'])->name('profil.simpan');
     Route::post('/keluar', [AnggotaController::class, 'keluar'])->name('keluar');
 });
 

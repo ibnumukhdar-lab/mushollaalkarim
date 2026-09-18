@@ -141,4 +141,52 @@ class AnggotaController extends Controller
             'pengaturan' => $this->pengaturan(),
         ]);
     }
+
+    /** Formulir ubah profil anggota: nama & nomor WhatsApp (+ opsional ganti sandi). */
+    public function formProfil()
+    {
+        return view('publik.profil', [
+            'anggota' => Auth::user(),
+            'menu' => $this->menu(),
+            'pengaturan' => $this->pengaturan(),
+        ]);
+    }
+
+    /** Simpan perubahan profil anggota. */
+    public function simpanProfil(Request $request)
+    {
+        $anggota = $request->user();
+
+        $data = $request->validate([
+            'nama_lengkap' => ['required', 'string', 'min:3', 'max:120'],
+            'no_wa' => ['nullable', 'string', 'max:25', 'regex:/^[0-9+()\s.\-]{6,25}$/'],
+            'sandi_lama' => ['nullable', 'required_with:sandi_baru', 'current_password'],
+            'sandi_baru' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ], [
+            'nama_lengkap.required' => 'Nama tidak boleh kosong.',
+            'nama_lengkap.min' => 'Nama minimal 3 huruf.',
+            'no_wa.regex' => 'Nomor WhatsApp hanya boleh angka, spasi, tanda +, -, titik, atau kurung.',
+            'sandi_lama.required_with' => 'Isi sandi Anda yang sekarang untuk menggantinya.',
+            'sandi_lama.current_password' => 'Sandi yang sekarang tidak cocok.',
+            'sandi_baru.min' => 'Sandi baru minimal 8 huruf.',
+            'sandi_baru.confirmed' => 'Ulangan sandi baru belum sama.',
+        ]);
+
+        $nama = trim($data['nama_lengkap']);
+        $anggota->nama_lengkap = $nama;
+        $anggota->name = $nama;
+        $anggota->no_wa = isset($data['no_wa']) && trim((string) $data['no_wa']) !== '' ? trim($data['no_wa']) : null;
+
+        $gantiSandi = false;
+        if (! empty($data['sandi_baru'])) {
+            $anggota->password = Hash::make($data['sandi_baru']);
+            $gantiSandi = true;
+        }
+
+        $anggota->save();
+
+        return redirect()
+            ->route('anggota')
+            ->with('profil_tersimpan', $gantiSandi ? 'sandi' : 'profil');
+    }
 }
