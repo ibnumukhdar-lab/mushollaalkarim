@@ -19,6 +19,8 @@ class PengaturanController extends Controller
         'kontak_wa' => ['label' => 'Nomor WhatsApp pengurus', 'bantuan' => 'Format 628xxxxxxxxxx — dipakai tombol hubungi & konfirmasi infaq.'],
         'alamat' => ['label' => 'Alamat musholla', 'bantuan' => 'Alamat lengkap untuk ditampilkan di situs.'],
         'jam_operasional' => ['label' => 'Jam kegiatan', 'bantuan' => 'mis. Setiap hari 04.30–21.00 WIB.'],
+        'operasional_bulanan' => ['label' => 'Kebutuhan operasional per bulan (Rp)', 'bantuan' => 'Dipakai halaman Mari Berinfaq untuk menampilkan kebutuhan biaya bulanan.'],
+        'makan_harian' => ['label' => 'Biaya Makan Gratis per hari (Rp)', 'bantuan' => 'Dipakai halaman Mari Berinfaq sebagai keterangan program makan gratis.'],
     ];
 
     public function index()

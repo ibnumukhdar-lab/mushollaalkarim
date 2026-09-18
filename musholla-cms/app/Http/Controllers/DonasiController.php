@@ -31,15 +31,23 @@ class DonasiController extends Controller
 
     public function tampilkan(Request $request)
     {
-        $hal = Page::query()->where('slug', 'mari-berinfaq')->first();
+        $awalBulan = \Illuminate\Support\Carbon::now()->startOfMonth();
 
         return view('publik.berinfaq', [
-            'hal' => $hal,
             'menu' => $this->menu(),
             'pengaturan' => $this->pengaturan(),
             'wakaf' => WakafProgram::query()->where('aktif', true)->orderBy('urutan')->get(),
-            'totalTerverifikasi' => (float) Infaq::query()->where('status', 'terverifikasi')->sum('nominal'),
-            'jumlahDonatur' => Infaq::query()->where('status', 'terverifikasi')->distinct('nama_donatur')->count('nama_donatur'),
+            // Program bawaan musholla (selain program wakaf yang dikelola di panel)
+            'makanGratis' => (float) Infaq::query()->where('status', 'terverifikasi')
+                ->where('tujuan', 'like', '%makan%')->sum('nominal'),
+            'operasionalBulanIni' => (float) \App\Models\Kas::query()
+                ->where('jenis', 'masuk')
+                ->whereBetween('tanggal', [$awalBulan->toDateString(), \Illuminate\Support\Carbon::now()->toDateString()])
+                ->where(function ($q) {
+                    $q->where('kategori', 'like', '%operasional%')
+                        ->orWhere('keterangan', 'like', '%operasional%');
+                })
+                ->sum('jumlah'),
             'terkirim' => session('infaq_terkirim'),
         ]);
     }

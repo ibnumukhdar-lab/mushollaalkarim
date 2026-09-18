@@ -283,7 +283,27 @@
             background: var(--hijau); color: #fff; box-shadow: 0 8px 22px rgba(31, 96, 70, .35);
         }
         .infaq-melayang:active { transform: scale(.97); }
-        @media (max-width: 760px) { .infaq-melayang { display: inline-flex; } }
+        @media (max-width: 760px) { html.js .infaq-melayang { display: inline-flex; } }
+
+        /* tombol pemicu popup hanya berguna bila JavaScript hidup */
+        .pemicu-infaq { display: none; }
+        html.js .pemicu-infaq { display: inline-flex; }
+
+        /* tombol tutup popup hanya perlu saat popup dipakai */
+        .infaq-modal .tombol-tutup-popup { display: none; }
+        html.js .infaq-modal .tombol-tutup-popup { display: inline-flex; }
+
+        /* catatan bila JavaScript dimatikan (formulir hidup di dalam popup) */
+        .catatan-tanpa-js { display: block; }
+        html.js .catatan-tanpa-js { display: none; }
+
+        /* pemilih nominal cepat di popup */
+        .nominal-cepat { display: flex; flex-wrap: wrap; gap: .4rem; margin: .35rem 0 .6rem; }
+        .nominal-cepat button {
+            font: inherit; font-size: .82rem; font-weight: 600; padding: .35rem .7rem; border-radius: 999px;
+            border: 1px solid var(--hijau-garis); background: var(--hijau-muda); color: var(--hijau-tua); cursor: pointer;
+        }
+        .nominal-cepat button.aktif { background: var(--hijau); border-color: var(--hijau); color: #fff; }
 
         /* ================= kaki ================= */
         footer.situs { background: var(--hijau-tua); color: #dbe9e1; padding: 2rem 0 2.2rem; font-size: .87rem; }
@@ -298,6 +318,8 @@
     @stack('gaya')
 </head>
 <body>
+
+<script>document.documentElement.classList.add('js');</script>
 
 <header class="situs">
     <div class="wadah kepala">

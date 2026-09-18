@@ -20,9 +20,6 @@
         @endif
         <div class="baris-salin">
             <button type="button" class="tombol-salin" data-salin="{{ $nomorTujuan }}">Salin nomor rekening</button>
-            @if ($bankTujuan !== '')
-                <span style="font-size:.78rem;color:var(--tinta-muda)">Tanpa biaya admin antar bank</span>
-            @endif
         </div>
     </div>
 @endif
