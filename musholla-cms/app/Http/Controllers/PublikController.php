@@ -6,6 +6,7 @@ use App\Models\Berita;
 use App\Models\Kajian;
 use App\Models\Page;
 use App\Models\Pengaturan;
+use App\Models\Program;
 use App\Models\WakafProgram;
 
 class PublikController extends Controller
@@ -29,6 +30,13 @@ class PublikController extends Controller
 
     public function beranda()
     {
+        // Program sepekan, disusun mulai dari hari ini
+        $urutanHari = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        $hariIni = $urutanHari[now()->dayOfWeek] ?? 'Ahad';
+        $mulai = array_search($hariIni, $urutanHari, true);
+        $mulai = $mulai === false ? 0 : $mulai;
+        $urutTampil = array_merge(array_slice($urutanHari, $mulai), array_slice($urutanHari, 0, $mulai));
+
         $hal = Page::query()->whereIn('slug', ['home-page', 'home'])->first();
 
         return view('publik.beranda', [
@@ -37,6 +45,11 @@ class PublikController extends Controller
             'berita' => Berita::query()->orderByDesc('terbit_at')->limit(3)->get(),
             'wakaf' => WakafProgram::query()->where('aktif', true)->orderBy('urutan')->get(),
             'kajian' => Kajian::query()->where('aktif', true)->orderByDesc('tanggal')->limit(4)->get(),
+            'programHari' => [
+                'hariIni' => $hariIni,
+                'urut' => $urutTampil,
+                'data' => Program::query()->where('aktif', true)->orderBy('urutan')->orderBy('id')->get()->groupBy('hari'),
+            ],
             'pengaturan' => $this->pengaturan(),
         ]);
     }

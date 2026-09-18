@@ -12,6 +12,41 @@
         </div>
     </section>
 
+    @if (! empty($programHari) && $programHari['data']->isNotEmpty())
+        <h2 class="bagian">Program Sepekan</h2>
+        <p class="bagian-ket">Kegiatan rutin musholla setiap hari — silakan hadir dan makmurkan bersama.</p>
+        <div class="jaring jadwal" style="margin-bottom:1.6rem">
+            @foreach ($programHari['urut'] as $hari)
+                @php
+                    $daftarKegiatan = $programHari['data'][$hari] ?? collect();
+                    $hariIniJuga = $hari === $programHari['hariIni'];
+                @endphp
+                <div @class(['kartu', 'jadwal-kartu', 'jadwal-ini' => $hariIniJuga])>
+                    <div class="jadwal-kepala">
+                        <h3>{{ $hari }}</h3>
+                        @if ($hariIniJuga)
+                            <span class="chip-hari">Hari ini</span>
+                        @endif
+                    </div>
+                    @forelse ($daftarKegiatan as $p)
+                        @php $tempatKegiatan = $p->tempat ?: null; @endphp
+                        <div class="jadwal-item">
+                            <span class="waktu-chip">{{ $p->waktu ?: '—' }}</span>
+                            <span class="jadwal-nama">
+                                {{ $p->nama }}
+                                @if ($tempatKegiatan)
+                                    <br><span style="font-size:.78rem;color:var(--tinta-muda)">{{ $tempatKegiatan }}</span>
+                                @endif
+                            </span>
+                        </div>
+                    @empty
+                        <p class="jadwal-kosong">Belum ada kegiatan terjadwal.</p>
+                    @endforelse
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     @if ($hal)
         <section class="kartu">
             <div class="isi-halaman">

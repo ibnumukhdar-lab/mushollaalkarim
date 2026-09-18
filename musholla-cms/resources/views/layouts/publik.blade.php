@@ -231,6 +231,31 @@
         }
         .tombol-kecil:hover { background: #dcece3; text-decoration: none; }
 
+        /* ================= jadwal program sepekan ================= */
+        .bagian-ket { font-size: .86rem; color: var(--tinta-muda); margin: -.4rem 0 1rem; }
+        .jaring.jadwal { grid-template-columns: 1fr; }
+        @media (min-width: 620px) { .jaring.jadwal { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1020px) { .jaring.jadwal { grid-template-columns: repeat(3, 1fr); } }
+        .jadwal-kartu { padding: 1rem 1.05rem; }
+        .jadwal-ini { border-color: var(--hijau-lembut); box-shadow: 0 0 0 2px rgba(63, 125, 92, .13); }
+        .jadwal-kepala { display: flex; align-items: center; gap: .5rem; margin-bottom: .45rem; }
+        .jadwal-kepala h3 { margin: 0; font-size: .97rem; color: var(--hijau-tua); }
+        .chip-hari {
+            font-size: .66rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+            background: var(--hijau); color: #fff; padding: .15rem .5rem; border-radius: 999px;
+        }
+        .jadwal-item { display: flex; gap: .55rem; align-items: flex-start; padding: .45rem 0; border-top: 1px dashed var(--garis); }
+        .jadwal-item:first-of-type { border-top: 0; }
+        .waktu-chip {
+            flex: none; font-size: .7rem; font-weight: 700; color: var(--hijau-tua);
+            background: var(--hijau-muda); border-radius: 8px; padding: .2rem .45rem; line-height: 1.35;
+        }
+        .jadwal-nama { font-size: .89rem; color: var(--tinta); line-height: 1.5; }
+        .jadwal-kosong { font-size: .82rem; color: var(--tinta-muda); font-style: italic; margin: .3rem 0 0; }
+        @media (max-width: 430px) {
+            .jadwal-item { flex-direction: column; gap: .25rem; }
+        }
+
         /* ================= infaq: popup & tombol melayang ================= */
         .infaq-selubung {
             position: fixed; inset: 0; background: rgba(28, 44, 36, .48); z-index: 80;

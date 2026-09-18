@@ -140,7 +140,7 @@ class Panel
                 ],
                 'field' => [
                     ['nama' => 'nama', 'label' => 'Nama kegiatan', 'tipe' => 'teks', 'wajib' => true, 'rules' => ['required', 'max:200'], 'lebar' => 'penuh'],
-                    ['nama' => 'hari', 'label' => 'Hari', 'tipe' => 'pilihan', 'rules' => ['nullable'], 'opsi' => ['Ahad' => 'Ahad', 'Senin' => 'Senin', 'Selasa' => 'Selasa', 'Rabu' => 'Rabu', 'Kamis' => 'Kamis', "Jum'at" => "Jum'at", 'Sabtu' => 'Sabtu']],
+                    ['nama' => 'hari', 'label' => 'Hari', 'tipe' => 'pilihan', 'rules' => ['nullable'], 'opsi' => ['Ahad' => 'Ahad', 'Senin' => 'Senin', 'Selasa' => 'Selasa', 'Rabu' => 'Rabu', 'Kamis' => 'Kamis', 'Jumat' => 'Jumat', 'Sabtu' => 'Sabtu']],
                     ['nama' => 'waktu', 'label' => 'Waktu', 'tipe' => 'teks', 'rules' => ['nullable', 'max:30'], 'bantuan' => 'mis. 05.00 WIB'],
                     ['nama' => 'tempat', 'label' => 'Tempat', 'tipe' => 'teks', 'rules' => ['nullable', 'max:200']],
                     ['nama' => 'urutan', 'label' => 'Urutan', 'tipe' => 'angka', 'rules' => ['nullable', 'integer']],
