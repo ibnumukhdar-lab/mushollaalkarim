@@ -18,7 +18,6 @@ class PengaturanController extends Controller
         'slogan' => ['label' => 'Slogan', 'bantuan' => 'Kalimat singkat di bawah nama situs.'],
         'kontak_wa' => ['label' => 'Nomor WhatsApp pengurus', 'bantuan' => 'Format 628xxxxxxxxxx — dipakai tombol hubungi & konfirmasi infaq.'],
         'alamat' => ['label' => 'Alamat musholla', 'bantuan' => 'Alamat lengkap untuk ditampilkan di situs.'],
-        'rekening' => ['label' => 'Rekening infaq', 'bantuan' => 'mis. BSI 7211xxxxxx a.n. Musholla Al Karim.'],
         'jam_operasional' => ['label' => 'Jam kegiatan', 'bantuan' => 'mis. Setiap hari 04.30–21.00 WIB.'],
     ];
 

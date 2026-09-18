@@ -44,6 +44,12 @@ Route::middleware(['auth', 'panel.admin'])->prefix('kelola')->name('panel.')->gr
     Route::get('/pengaturan-situs', [\App\Http\Controllers\Panel\PengaturanController::class, 'index'])->name('pengaturan');
     Route::post('/pengaturan-situs', [\App\Http\Controllers\Panel\PengaturanController::class, 'simpan'])->name('pengaturan.simpan');
 
+    Route::get('/infaq-qris', [\App\Http\Controllers\Panel\InfaqQrisController::class, 'index'])->name('qris');
+    Route::post('/infaq-qris', [\App\Http\Controllers\Panel\InfaqQrisController::class, 'simpan'])->name('qris.simpan');
+    Route::delete('/infaq-qris', [\App\Http\Controllers\Panel\InfaqQrisController::class, 'hapusQris'])->name('qris.hapus');
+    Route::post('/infaq/{id}/verifikasi', [\App\Http\Controllers\Panel\InfaqController::class, 'verifikasi'])->name('infaq.verifikasi');
+    Route::post('/infaq/{id}/tolak', [\App\Http\Controllers\Panel\InfaqController::class, 'tolak'])->name('infaq.tolak');
+
     Route::get('/{modul}', [\App\Http\Controllers\Panel\PanelController::class, 'daftar'])->name('daftar');
     Route::get('/{modul}/tambah', [\App\Http\Controllers\Panel\PanelController::class, 'tambah'])->name('tambah');
     Route::post('/{modul}', [\App\Http\Controllers\Panel\PanelController::class, 'simpan'])->name('simpan');

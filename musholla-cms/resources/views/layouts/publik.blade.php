@@ -231,6 +231,60 @@
         }
         .tombol-kecil:hover { background: #dcece3; text-decoration: none; }
 
+        /* ================= infaq: popup & tombol melayang ================= */
+        .infaq-selubung {
+            position: fixed; inset: 0; background: rgba(28, 44, 36, .48); z-index: 80;
+            opacity: 0; visibility: hidden; transition: opacity .2s ease;
+        }
+        .infaq-modal {
+            position: fixed; z-index: 90; left: 50%; top: 50%; transform: translate(-50%, -46%) scale(.98);
+            width: min(94vw, 520px); max-height: 88vh; overflow-y: auto; background: #fff;
+            border-radius: 18px; box-shadow: 0 18px 50px rgba(20, 42, 30, .28);
+            opacity: 0; visibility: hidden; transition: opacity .2s ease, transform .22s ease;
+        }
+        body.infaq-terbuka { overflow: hidden; }
+        body.infaq-terbuka .infaq-selubung { opacity: 1; visibility: visible; }
+        body.infaq-terbuka .infaq-modal { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+        .infaq-kepala {
+            display: flex; align-items: center; gap: .6rem; padding: .95rem 1.1rem;
+            border-bottom: 1px solid var(--hijau-garis); position: sticky; top: 0; background: #fff; z-index: 2;
+        }
+        .infaq-kepala h3 { margin: 0; margin-right: auto; font-size: 1.02rem; color: var(--hijau-tua); }
+        .infaq-tutup {
+            border: 1px solid var(--hijau-garis); background: #fff; color: var(--tinta-muda);
+            width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 1rem; line-height: 1;
+        }
+        .infaq-tutup:hover { background: var(--hijau-muda); }
+        .infaq-isi { padding: 1rem 1.1rem 1.3rem; }
+        .infaq-label { font-size: .72rem; letter-spacing: .7px; text-transform: uppercase; color: var(--tinta-muda); margin: 0 0 .35rem; }
+        .infaq-bank {
+            border: 1px solid var(--hijau-garis); border-radius: 14px; padding: .9rem 1rem; margin-bottom: 1rem;
+            background: linear-gradient(160deg, #f4faf6, #ffffff);
+        }
+        .infaq-bank .bank { font-size: .84rem; color: var(--hijau-tua); font-weight: 600; }
+        .infaq-bank .nomor {
+            font-size: 1.42rem; font-weight: 700; letter-spacing: 1px; color: var(--tinta);
+            font-variant-numeric: tabular-nums; margin: .2rem 0 .1rem; overflow-wrap: anywhere;
+        }
+        .infaq-bank .atas { font-size: .84rem; color: var(--tinta-muda); }
+        .infaq-bank .baris-salin { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-top: .7rem; }
+        .tombol-salin {
+            font: inherit; font-size: .84rem; font-weight: 600; padding: .42rem .8rem; border-radius: 10px;
+            border: 1px solid var(--hijau); background: var(--hijau); color: #fff; cursor: pointer;
+        }
+        .tombol-salin.sudah { background: #1f6b41; border-color: #1f6b41; }
+        .infaq-qris { text-align: center; border: 1px solid var(--hijau-garis); border-radius: 14px; padding: .9rem; margin-bottom: 1rem; }
+        .infaq-qris img { width: 100%; max-width: 260px; border-radius: 12px; background: #fff; }
+        .infaq-qris .ket { font-size: .82rem; color: var(--tinta-muda); margin: .5rem 0 0; }
+        .infaq-melayang {
+            position: fixed; z-index: 70; right: 1rem; bottom: 1rem; display: none;
+            align-items: center; gap: .45rem; font: inherit; font-size: .9rem; font-weight: 600;
+            padding: .62rem 1.05rem; border: 0; border-radius: 999px; cursor: pointer;
+            background: var(--hijau); color: #fff; box-shadow: 0 8px 22px rgba(31, 96, 70, .35);
+        }
+        .infaq-melayang:active { transform: scale(.97); }
+        @media (max-width: 760px) { .infaq-melayang { display: inline-flex; } }
+
         /* ================= kaki ================= */
         footer.situs { background: var(--hijau-tua); color: #dbe9e1; padding: 2rem 0 2.2rem; font-size: .87rem; }
         footer.situs a { color: #fff; }
@@ -241,6 +295,7 @@
         footer.situs .tautan a { font-size: .88rem; opacity: .95; }
         footer.situs .kecil { opacity: .75; font-size: .78rem; margin-top: 1.6rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.16); }
     </style>
+    @stack('gaya')
 </head>
 <body>
 
@@ -380,5 +435,6 @@
     // Pintasan: /#menu membuka sidebar langsung (berguna untuk pratinjau & tautan)
     if (window.location.hash === '#menu') { bukaMenu(); }
 </script>
+@stack('skrip')
 </body>
 </html>

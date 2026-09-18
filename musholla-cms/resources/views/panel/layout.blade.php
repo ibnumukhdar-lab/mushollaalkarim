@@ -15,6 +15,7 @@
     <title>@yield('judul', 'Panel') — {{ $namaSitus }}</title>
     <style>
         :root {
+            /* Warna khas Musholla Al Karim — hijau soft */
             --hijau: #3f7d5c;
             --hijau-tua: #2f6046;
             --hijau-gelap: #24503a;
@@ -271,6 +272,7 @@
             main.isi { padding: 1.4rem 1.6rem 3rem; }
         }
     </style>
+    @stack('gaya')
 </head>
 <body>
 
@@ -299,6 +301,11 @@
                         @include('panel._ikon', ['nama' => $m['ikon']]) {{ $m['judul'] }}
                     </a>
                 @endforeach
+                @if ($kunciGrup === 'keuangan')
+                    <a href="{{ route('panel.qris') }}" @class(['aktif' => request()->routeIs('panel.qris')])>
+                        @include('panel._ikon', ['nama' => 'gear']) Infaq &amp; QRIS
+                    </a>
+                @endif
             </div>
         @endforeach
 

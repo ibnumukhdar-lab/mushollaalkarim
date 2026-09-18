@@ -66,6 +66,20 @@
                             @if (empty($def['hanyaLihat']))
                                 <td data-label="Aksi">
                                     <div class="aksi-baris">
+                                        @if ($modul === 'infaq' && $r->status === 'menunggu')
+                                            <form method="post" action="{{ route('panel.infaq.verifikasi', $r->id) }}" style="margin:0">
+                                                @csrf
+                                                <button class="ikon-tbl" type="submit" title="Verifikasi &amp; catat ke kas" aria-label="Verifikasi" style="color:#1f6b41">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{{ route('panel.infaq.tolak', $r->id) }}" onsubmit="return confirm('Tandai infaq ini ditolak?')" style="margin:0">
+                                                @csrf
+                                                <button class="ikon-tbl bahaya" type="submit" title="Tolak" aria-label="Tolak">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                                                </button>
+                                            </form>
+                                        @endif
                                         <a class="ikon-tbl" href="{{ route('panel.ubah', [$modul, $r->id]) }}" title="Ubah data" aria-label="Ubah">
                                             @include('panel._ikon', ['nama' => 'ubah'])
                                         </a>
