@@ -1,6 +1,9 @@
 @php
     $namaSitus = $pengaturan['nama_situs'] ?? 'Musholla Al Karim';
     $slogan = $pengaturan['slogan'] ?? null;
+    $menuSitus = \App\Support\Menu::utama();
+    $pengguna = auth()->user();
+    $namaPengguna = $pengguna ? ($pengguna->nama_lengkap ?: $pengguna->name) : null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -9,21 +12,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('judul', $namaSitus)</title>
-    <meta name="description" content="@yield('deskripsi', $slogan ?: 'Musholla Al Karim — kajian, pendidikan Al-Qur\'an, dan kegiatan umat.')">
+    <meta name="description" content="@yield('deskripsi', $slogan ?: 'Musholla Al Karim — kajian, kegiatan umat, dan infaq terbuka.')">
     <link rel="canonical" href="{{ url()->current() }}">
     <meta property="og:title" content="@yield('judul', $namaSitus)">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
+    <meta name="theme-color" content="#3f7d5c">
     <style>
         :root {
-            --navy: #1f3a5f;
-            --navy-lembut: #2c4f7c;
-            --tinta: #22303f;
-            --tinta-muda: #5b6b7c;
-            --kertas: #f6f7f9;
+            /* Warna khas Musholla Al Karim — hijau soft */
+            --hijau: #3f7d5c;
+            --hijau-tua: #2f6046;
+            --hijau-lembut: #6aa383;
+            --hijau-muda: #edf5f0;
+            --hijau-garis: #dcebe2;
+            --emas: #c9a961;
+            --kertas: #f7faf8;
             --kartu: #ffffff;
-            --garis: #e3e7ec;
-            --emas: #c8a24a;
+            --garis: #e4ece7;
+            --tinta: #26332c;
+            --tinta-muda: #61736a;
+            /* alias lama (dipakai sebagian halaman lain) */
+            --navy: #2f6046;
+            --navy-lembut: #457f61;
+            --radius: 14px;
         }
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; }
@@ -32,62 +44,148 @@
             color: var(--tinta); background: var(--kertas); line-height: 1.7;
             -webkit-text-size-adjust: 100%;
         }
-        a { color: var(--navy); text-decoration: none; }
+        body.menu-terbuka { overflow: hidden; }
+        a { color: var(--hijau-tua); text-decoration: none; }
         a:hover { text-decoration: underline; }
         img { max-width: 100%; height: auto; border-radius: 12px; }
-        .wadah { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 1.1rem; }
+        .wadah { width: 100%; max-width: 1060px; margin: 0 auto; padding: 0 1.1rem; }
+        svg { width: 1.05em; height: 1.05em; flex: none; }
 
-        /* kepala */
-        header.situs { background: var(--navy); color: #fff; }
-        .kepala-baris { display: flex; align-items: center; gap: .8rem; padding: .85rem 0; }
-        .merek { display: flex; flex-direction: column; line-height: 1.15; margin-right: auto; }
-        .merek strong { font-size: 1.02rem; letter-spacing: .2px; }
-        .merek span { font-size: .72rem; opacity: .78; }
+        /* ================= kepala ================= */
+        header.situs {
+            background: #fff; border-bottom: 1px solid var(--hijau-garis);
+            position: sticky; top: 0; z-index: 40;
+        }
+        .kepala { display: flex; align-items: center; gap: .6rem; min-height: 62px; }
         .tombol-menu {
-            background: rgba(255,255,255,.12); border: 0; color: #fff; font-size: 1.1rem;
-            width: 38px; height: 38px; border-radius: 10px; cursor: pointer; line-height: 1;
+            border: 1px solid var(--hijau-garis); background: var(--hijau-muda); color: var(--hijau-tua);
+            width: 38px; height: 38px; border-radius: 11px; cursor: pointer; padding: 0;
+            display: inline-flex; align-items: center; justify-content: center;
         }
-        nav.situs { display: none; flex-wrap: wrap; gap: .35rem; }
-        nav.situs.buka { display: flex; padding-bottom: .8rem; }
-        nav.situs a {
-            color: #e8eefa; font-size: .85rem; padding: .4rem .7rem; border-radius: 9px;
-            background: rgba(255,255,255,.07);
+        .tombol-menu:hover { background: #e2efe7; }
+        .tombol-menu svg { width: 20px; height: 20px; }
+        .merek { display: flex; align-items: center; gap: .55rem; margin-right: auto; color: var(--hijau-tua); }
+        .merek:hover { text-decoration: none; }
+        .lambang {
+            width: 36px; height: 36px; border-radius: 11px; flex: none;
+            background: var(--hijau); color: #fff;
+            display: inline-flex; align-items: center; justify-content: center;
         }
-        nav.situs a:hover, nav.situs a.aktif { background: rgba(255,255,255,.2); text-decoration: none; }
-        @media (min-width: 820px) {
+        .lambang svg { width: 21px; height: 21px; }
+        .merek-teks { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+        .merek-teks strong { font-size: 1rem; letter-spacing: .1px; color: var(--hijau-tua); white-space: nowrap; }
+        .merek-teks span {
+            display: none; font-size: .7rem; color: var(--tinta-muda);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        nav.atas { display: none; align-items: center; gap: .18rem; }
+        nav.atas a {
+            font-size: .88rem; color: var(--tinta); padding: .42rem .7rem; border-radius: 10px;
+            display: inline-flex; align-items: center; gap: .4rem;
+        }
+        nav.atas a:hover { background: var(--hijau-muda); text-decoration: none; }
+        nav.atas a.aktif { background: var(--hijau-muda); color: var(--hijau-tua); font-weight: 600; }
+        nav.atas svg { width: 16px; height: 16px; opacity: .8; }
+        .kepala-aksi { display: flex; align-items: center; gap: .45rem; }
+        .tombol-akun {
+            display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+            border: 1px solid var(--hijau-garis); background: #fff; color: var(--hijau-tua);
+            width: 38px; height: 38px; border-radius: 11px; font-size: .85rem;
+        }
+        .tombol-akun:hover { background: var(--hijau-muda); text-decoration: none; }
+        .tombol-daftar {
+            display: none; align-items: center; gap: .35rem; background: var(--hijau); color: #fff;
+            font-size: .85rem; font-weight: 600; padding: .45rem .9rem; border-radius: 10px;
+        }
+        .tombol-daftar:hover { background: var(--hijau-tua); text-decoration: none; }
+        @media (min-width: 940px) {
             .tombol-menu { display: none; }
-            nav.situs { display: flex !important; padding-bottom: 0; }
-            .merek { flex-direction: row; align-items: baseline; gap: .6rem; }
+            nav.atas { display: flex; }
+            .tombol-daftar { display: inline-flex; }
+            .merek-teks span { display: block; }
         }
+        /* ================= sidebar (tombol garis tiga) ================= */
+        .selubung {
+            position: fixed; inset: 0; background: rgba(38, 51, 44, .42); backdrop-filter: blur(1.5px);
+            opacity: 0; visibility: hidden; transition: opacity .22s ease; z-index: 60;
+        }
+        .sisi {
+            position: fixed; top: 0; left: 0; bottom: 0; width: 84%; max-width: 320px; z-index: 70;
+            background: #fff; display: flex; flex-direction: column;
+            border-right: 1px solid var(--hijau-garis);
+            transform: translateX(-102%); transition: transform .26s ease;
+            box-shadow: 6px 0 28px rgba(38, 51, 44, .12);
+            overflow-y: auto;
+        }
+        body.menu-terbuka .selubung { opacity: 1; visibility: visible; }
+        body.menu-terbuka .sisi { transform: translateX(0); }
+        .sisi-kepala {
+            display: flex; align-items: center; gap: .55rem; padding: .9rem 1rem;
+            border-bottom: 1px solid var(--hijau-garis);
+        }
+        .sisi-kepala .merek-teks { margin-right: auto; }
+        .sisi-tutup {
+            border: 1px solid var(--hijau-garis); background: #fff; color: var(--tinta-muda);
+            width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 1.05rem; line-height: 1;
+        }
+        .sisi-tutup:hover { background: var(--hijau-muda); }
+        .sisi-menu { padding: .7rem .6rem; display: flex; flex-direction: column; gap: .18rem; }
+        .sisi-menu a {
+            display: flex; align-items: center; gap: .6rem; padding: .62rem .7rem; border-radius: 11px;
+            color: var(--tinta); font-size: .93rem;
+        }
+        .sisi-menu a:hover { background: var(--hijau-muda); text-decoration: none; }
+        .sisi-menu a.aktif { background: var(--hijau-muda); color: var(--hijau-tua); font-weight: 600; }
+        .sisi-menu a svg { color: var(--hijau); }
+        .sisi-kaki { margin-top: auto; padding: .9rem 1rem 1.4rem; border-top: 1px solid var(--hijau-garis); }
+        .sisi-kaki .nama { font-size: .9rem; font-weight: 600; color: var(--hijau-tua); }
+        .sisi-kaki .surel { font-size: .78rem; color: var(--tinta-muda); margin-bottom: .7rem; word-break: break-all; }
+        .sisi-kaki .tombol-penuh {
+            display: block; text-align: center; font-size: .9rem; font-weight: 600; padding: .6rem 1rem;
+            border-radius: 11px; background: var(--hijau); color: #fff; margin-bottom: .5rem;
+        }
+        .sisi-kaki .tombol-penuh:hover { background: var(--hijau-tua); text-decoration: none; }
+        .sisi-kaki .tombol-samar {
+            display: block; text-align: center; font-size: .9rem; font-weight: 600; padding: .55rem 1rem;
+            border-radius: 11px; border: 1px solid var(--hijau-garis); color: var(--hijau-tua); background: #fff;
+            width: 100%; cursor: pointer; font-family: inherit;
+        }
+        .sisi-kaki .tombol-samar:hover { background: var(--hijau-muda); }
+        .sisi-kaki form { margin: 0; }
 
-        main { padding: 1.6rem 0 3rem; }
+        /* ================= isi ================= */
+        main { padding: 1.5rem 0 3rem; }
         .pahlawan {
-            background: linear-gradient(140deg, var(--navy) 0%, var(--navy-lembut) 100%);
+            background: linear-gradient(140deg, var(--hijau) 0%, var(--hijau-lembut) 100%);
             color: #fff; border-radius: 18px; padding: 1.9rem 1.4rem; margin-bottom: 1.6rem;
         }
-        .pahlawan h1 { margin: 0 0 .5rem; font-size: 1.55rem; line-height: 1.3; }
-        .pahlawan p { margin: 0 0 1.1rem; opacity: .9; font-size: .95rem; }
-        .aksi { display: flex; flex-wrap: wrap; gap: .6rem; }
+        .pahlawan h1 { margin: 0 0 .5rem; font-size: 1.5rem; line-height: 1.3; }
+        .pahlawan p { margin: 0 0 1.1rem; opacity: .94; font-size: .95rem; }
+        .aksi { display: flex; flex-wrap: wrap; gap: .55rem; }
         .tombol {
-            display: inline-block; padding: .55rem 1rem; border-radius: 10px; font-size: .88rem;
-            font-weight: 600; background: #fff; color: var(--navy);
+            display: inline-block; padding: .5rem .95rem; border-radius: 10px; font-size: .87rem;
+            font-weight: 600; background: #fff; color: var(--hijau-tua);
         }
-        .tombol.garis { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.5); }
-        .tombol:hover { text-decoration: none; opacity: .92; }
+        .tombol.garis { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.6); }
+        .tombol:hover { text-decoration: none; opacity: .93; }
 
-        h2.bagian { font-size: 1.12rem; margin: 2rem 0 .9rem; color: var(--navy); }
+        h2.bagian {
+            font-size: 1.1rem; margin: 2rem 0 .9rem; color: var(--hijau-tua);
+            display: flex; align-items: center; gap: .5rem;
+        }
+        h2.bagian::before { content: ""; width: 4px; height: 1.05em; border-radius: 3px; background: var(--hijau-lembut); }
         .kartu {
-            background: var(--kartu); border: 1px solid var(--garis); border-radius: 14px;
-            padding: 1.15rem 1.2rem; box-shadow: 0 1px 2px rgba(31,58,95,.04);
+            background: var(--kartu); border: 1px solid var(--garis); border-radius: var(--radius);
+            padding: 1.15rem 1.2rem; box-shadow: 0 1px 2px rgba(47, 96, 70, .05);
         }
         .jaring { display: grid; gap: 1rem; }
         @media (min-width: 700px) { .jaring.dua { grid-template-columns: 1fr 1fr; } .jaring.tiga { grid-template-columns: repeat(3, 1fr); } }
-        .kartu h3 { margin: .1rem 0 .35rem; font-size: 1rem; color: var(--navy); }
-        .kartu .tanggal { font-size: .76rem; color: var(--tinta-muda); text-transform: uppercase; letter-spacing: .4px; }
+        .kartu h3 { margin: .1rem 0 .35rem; font-size: 1rem; color: var(--hijau-tua); }
+        .kartu .tanggal { font-size: .74rem; color: var(--tinta-muda); text-transform: uppercase; letter-spacing: .4px; }
         .kartu p { margin: .4rem 0 0; font-size: .92rem; color: var(--tinta-muda); }
 
         .isi-halaman :first-child { margin-top: 0; }
-        .isi-halaman h1, .isi-halaman h2, .isi-halaman h3 { color: var(--navy); line-height: 1.35; }
+        .isi-halaman h1, .isi-halaman h2, .isi-halaman h3 { color: var(--hijau-tua); line-height: 1.35; }
         .isi-halaman h2 { font-size: 1.15rem; margin: 1.6rem 0 .6rem; }
         .isi-halaman h3 { font-size: 1.02rem; margin: 1.3rem 0 .5rem; }
         .isi-halaman p { margin: .7rem 0; }
@@ -97,15 +195,11 @@
         .isi-halaman th, .isi-halaman td { border: 1px solid var(--garis); padding: .5rem .6rem; text-align: left; }
 
         .remah { font-size: .8rem; color: var(--tinta-muda); margin-bottom: .7rem; }
-        .judul-halaman { font-size: 1.4rem; color: var(--navy); margin: .2rem 0 1.1rem; }
+        .judul-halaman { font-size: 1.35rem; color: var(--hijau-tua); margin: .2rem 0 1.1rem; }
 
-        footer.situs { background: var(--navy); color: #d6e0f0; padding: 1.8rem 0 2.2rem; font-size: .86rem; }
-        footer.situs a { color: #fff; }
-        footer.situs .tautan { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-bottom: 1rem; }
-        footer.situs .kecil { opacity: .72; font-size: .78rem; }
-        /* formulir */
+        /* ================= formulir ================= */
         .form-kartu .baris { margin-bottom: .9rem; }
-        .form-kartu label { display: block; font-size: .82rem; font-weight: 600; color: var(--navy); margin-bottom: .3rem; }
+        .form-kartu label, .label { display: block; font-size: .82rem; font-weight: 600; color: var(--hijau-tua); margin-bottom: .3rem; }
         .form-kartu .wajib { color: #a4373f; }
         .form-kartu input, .form-kartu select, .form-kartu textarea {
             width: 100%; font: inherit; font-size: .92rem; padding: .55rem .7rem;
@@ -113,16 +207,16 @@
         }
         .form-kartu input[type=file] { padding: .45rem; background: #fbfcfd; }
         .form-kartu input:focus, .form-kartu select:focus, .form-kartu textarea:focus {
-            outline: 2px solid rgba(31,58,95,.18); border-color: var(--navy);
+            outline: 2px solid rgba(63, 125, 92, .22); border-color: var(--hijau);
         }
         .form-kartu small { display: block; font-size: .74rem; color: var(--tinta-muda); margin-top: .25rem; }
         .tombol-kirim {
-            font: inherit; font-weight: 600; font-size: .92rem; padding: .65rem 1.3rem; border: 0;
-            border-radius: 10px; background: var(--navy); color: #fff; cursor: pointer;
+            font: inherit; font-weight: 600; font-size: .9rem; padding: .6rem 1.2rem; border: 0;
+            border-radius: 10px; background: var(--hijau); color: #fff; cursor: pointer;
         }
-        .tombol-kirim:hover { background: var(--navy-lembut); }
+        .tombol-kirim:hover { background: var(--hijau-tua); }
         .pesan-sukses {
-            background: #e8f5ec; border: 1px solid #bfe3cb; color: #1f5a37;
+            background: #e9f6ee; border: 1px solid #bfe3cb; color: #1f5a37;
             padding: .9rem 1.1rem; border-radius: 12px; margin-bottom: 1.2rem; font-size: .9rem;
         }
         .pesan-galat {
@@ -130,44 +224,94 @@
             padding: .9rem 1.1rem; border-radius: 12px; margin-bottom: 1.2rem; font-size: .9rem;
         }
         .kosong { color: var(--tinta-muda); font-style: italic; }
-        /* tautan masuk/keluar di kepala & kaki */
-        nav.situs a.masuk { background: rgba(255,255,255,.2); font-weight: 600; }
-        nav.situs button.keluar {
-            font: inherit; font-size: .85rem; color: #e8eefa; padding: .4rem .7rem;
-            border: 0; border-radius: 9px; background: rgba(255,255,255,.07); cursor: pointer;
-        }
-        nav.situs button.keluar:hover { background: rgba(255,255,255,.2); }
+
+        /* ================= kaki ================= */
+        footer.situs { background: var(--hijau-tua); color: #dbe9e1; padding: 2rem 0 2.2rem; font-size: .87rem; }
+        footer.situs a { color: #fff; }
+        .kaki-jaring { display: grid; gap: 1.4rem; }
+        @media (min-width: 780px) { .kaki-jaring { grid-template-columns: 1.3fr 1fr 1fr; gap: 2rem; } }
+        footer.situs h4 { margin: 0 0 .6rem; font-size: .8rem; letter-spacing: .8px; text-transform: uppercase; opacity: .78; }
+        footer.situs .tautan { display: flex; flex-direction: column; gap: .4rem; }
+        footer.situs .tautan a { font-size: .88rem; opacity: .95; }
+        footer.situs .kecil { opacity: .75; font-size: .78rem; margin-top: 1.6rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.16); }
     </style>
 </head>
 <body>
+
 <header class="situs">
-    <div class="wadah">
-        <div class="kepala-baris">
-            <button class="tombol-menu" onclick="document.getElementById('navUtama').classList.toggle('buka')" aria-label="Buka menu">☰</button>
-            <a href="/" class="merek" style="color:#fff">
+    <div class="wadah kepala">
+        <button type="button" class="tombol-menu" id="tombolMenu" aria-label="Buka menu" aria-expanded="false" aria-controls="sisiMenu" onclick="bukaMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+
+        <a href="/" class="merek">
+            <span class="lambang">@include('publik._ikon', ['nama' => 'masjid'])</span>
+            <span class="merek-teks">
                 <strong>{{ $namaSitus }}</strong>
-                @if ($slogan) <span>{{ $slogan }}</span> @endif
-            </a>
-        </div>
-        <nav class="situs" id="navUtama">
-            <a href="/">Beranda</a>
-            @foreach ($menu as $m)
-                <a href="/{{ $m['slug'] }}" @class(['aktif' => request()->is($m['slug'])])>{{ $m['judul'] }}</a>
+                @if ($slogan) <span>{{ \Illuminate\Support\Str::limit($slogan, 46) }}</span> @endif
+            </span>
+        </a>
+
+        <nav class="atas" aria-label="Menu utama">
+            @foreach ($menuSitus as $m)
+                <a href="{{ $m['url'] }}" @class(['aktif' => request()->is($m['aktif'])])>
+                    @include('publik._ikon', ['nama' => $m['ikon']])
+                    {{ $m['judul'] }}
+                </a>
             @endforeach
-            <a href="/berita">Berita</a>
-            @auth
-                <a href="/anggota" @class(['aktif' => request()->is('anggota')])>Halo, {{ \Illuminate\Support\Str::limit(auth()->user()->nama_lengkap ?: auth()->user()->name, 14) }}</a>
-                <form method="post" action="/keluar" style="display:inline;margin:0">
-                    @csrf
-                    <button type="submit" class="keluar">Keluar</button>
-                </form>
-            @else
-                <a href="/masuk" @class(['masuk' => true, 'aktif' => request()->is('masuk')])>Masuk</a>
-                <a href="/daftar" @class(['aktif' => request()->is('daftar')])>Daftar</a>
-            @endauth
         </nav>
+
+        <div class="kepala-aksi">
+            @auth
+                <a href="{{ url('/anggota') }}" class="tombol-akun" title="Akun saya" aria-label="Akun saya">
+                    @include('publik._ikon', ['nama' => 'akun'])
+                </a>
+            @else
+                <a href="{{ url('/masuk') }}" class="tombol-akun" title="Masuk" aria-label="Masuk">
+                    @include('publik._ikon', ['nama' => 'akun'])
+                </a>
+                <a href="{{ url('/daftar') }}" class="tombol-daftar">Daftar</a>
+            @endauth
+        </div>
     </div>
 </header>
+
+{{-- Sidebar untuk tombol garis tiga (HP & tablet) --}}
+<div class="selubung" id="selubungMenu" onclick="tutupMenu()"></div>
+<aside class="sisi" id="sisiMenu" aria-label="Menu samping" aria-hidden="true">
+    <div class="sisi-kepala">
+        <span class="lambang">@include('publik._ikon', ['nama' => 'masjid'])</span>
+        <span class="merek-teks">
+            <strong>{{ $namaSitus }}</strong>
+            <span>Menu</span>
+        </span>
+        <button type="button" class="sisi-tutup" aria-label="Tutup menu" onclick="tutupMenu()">✕</button>
+    </div>
+
+    <nav class="sisi-menu">
+        @foreach ($menuSitus as $m)
+            <a href="{{ $m['url'] }}" @class(['aktif' => request()->is($m['aktif'])])>
+                @include('publik._ikon', ['nama' => $m['ikon']])
+                {{ $m['judul'] }}
+            </a>
+        @endforeach
+    </nav>
+
+    <div class="sisi-kaki">
+        @auth
+            <div class="nama">{{ $namaPengguna }}</div>
+            <div class="surel">{{ $pengguna->email }}</div>
+            <a href="{{ url('/anggota') }}" class="tombol-penuh">Akun Saya</a>
+            <form method="post" action="{{ url('/keluar') }}">
+                @csrf
+                <button type="submit" class="tombol-samar">Keluar</button>
+            </form>
+        @else
+            <a href="{{ url('/daftar') }}" class="tombol-penuh">Daftar Subscriber</a>
+            <a href="{{ url('/masuk') }}" class="tombol-samar">Masuk</a>
+        @endauth
+    </div>
+</aside>
 
 <main>
     <div class="wadah">
@@ -177,23 +321,58 @@
 
 <footer class="situs">
     <div class="wadah">
-        <div class="tautan">
-            <a href="/">Beranda</a>
-            @foreach ($menu as $m)
-                <a href="/{{ $m['slug'] }}">{{ $m['judul'] }}</a>
-            @endforeach
-            <a href="/berita">Berita</a>
-            @auth
-                <a href="/anggota">Akun Saya</a>
-            @else
-                <a href="/daftar">Daftar Subscriber</a>
-                <a href="/masuk">Masuk</a>
-            @endauth
+        <div class="kaki-jaring">
+            <div>
+                <h4>{{ $namaSitus }}</h4>
+                @if ($slogan) <p style="margin:0;opacity:.9">{{ $slogan }}</p> @endif
+            </div>
+            <div>
+                <h4>Menu</h4>
+                <div class="tautan">
+                    @foreach ($menuSitus as $m)
+                        <a href="{{ $m['url'] }}">{{ $m['judul'] }}</a>
+                    @endforeach
+                </div>
+            </div>
+            <div>
+                <h4>Akun</h4>
+                <div class="tautan">
+                    @auth
+                        <a href="{{ url('/anggota') }}">Akun Saya</a>
+                        <form method="post" action="{{ url('/keluar') }}" style="margin:0">
+                            @csrf
+                            <button type="submit" style="background:0;border:0;padding:0;color:#fff;font:inherit;font-size:.88rem;cursor:pointer">Keluar</button>
+                        </form>
+                    @else
+                        <a href="{{ url('/daftar') }}">Daftar Subscriber</a>
+                        <a href="{{ url('/masuk') }}">Masuk</a>
+                    @endauth
+                    <a href="{{ url('/privacy-policy') }}">Kebijakan Privasi</a>
+                </div>
+            </div>
         </div>
-        <div class="kecil">
-            &copy; {{ date('Y') }} {{ $namaSitus }}. Seluruh hak cipta dilindungi.
-        </div>
+        <div class="kecil">&copy; {{ date('Y') }} {{ $namaSitus }}. Seluruh hak cipta dilindungi.</div>
     </div>
 </footer>
+
+<script>
+    function bukaMenu() {
+        document.body.classList.add('menu-terbuka');
+        var t = document.getElementById('tombolMenu');
+        var s = document.getElementById('sisiMenu');
+        if (t) t.setAttribute('aria-expanded', 'true');
+        if (s) s.setAttribute('aria-hidden', 'false');
+    }
+    function tutupMenu() {
+        document.body.classList.remove('menu-terbuka');
+        var t = document.getElementById('tombolMenu');
+        var s = document.getElementById('sisiMenu');
+        if (t) t.setAttribute('aria-expanded', 'false');
+        if (s) s.setAttribute('aria-hidden', 'true');
+    }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') tutupMenu(); });
+    // Pintasan: /#menu membuka sidebar langsung (berguna untuk pratinjau & tautan)
+    if (window.location.hash === '#menu') { bukaMenu(); }
+</script>
 </body>
 </html>

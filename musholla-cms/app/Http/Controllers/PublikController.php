@@ -24,14 +24,7 @@ class PublikController extends Controller
 
     private function menu(): array
     {
-        return Page::query()
-            ->whereNotNull('terbit_at')
-            ->whereNotIn('slug', self::BUKAN_MENU)
-            ->orderBy('urutan_menu')
-            ->orderBy('id')
-            ->get(['judul', 'slug'])
-            ->map(fn ($p) => ['judul' => $p->judul, 'slug' => $p->slug])
-            ->all();
+        return \App\Support\Menu::utama();
     }
 
     public function beranda()
