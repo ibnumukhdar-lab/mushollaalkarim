@@ -130,6 +130,13 @@
             padding: .9rem 1.1rem; border-radius: 12px; margin-bottom: 1.2rem; font-size: .9rem;
         }
         .kosong { color: var(--tinta-muda); font-style: italic; }
+        /* tautan masuk/keluar di kepala & kaki */
+        nav.situs a.masuk { background: rgba(255,255,255,.2); font-weight: 600; }
+        nav.situs button.keluar {
+            font: inherit; font-size: .85rem; color: #e8eefa; padding: .4rem .7rem;
+            border: 0; border-radius: 9px; background: rgba(255,255,255,.07); cursor: pointer;
+        }
+        nav.situs button.keluar:hover { background: rgba(255,255,255,.2); }
     </style>
 </head>
 <body>
@@ -148,6 +155,16 @@
                 <a href="/{{ $m['slug'] }}" @class(['aktif' => request()->is($m['slug'])])>{{ $m['judul'] }}</a>
             @endforeach
             <a href="/berita">Berita</a>
+            @auth
+                <a href="/anggota" @class(['aktif' => request()->is('anggota')])>Halo, {{ \Illuminate\Support\Str::limit(auth()->user()->nama_lengkap ?: auth()->user()->name, 14) }}</a>
+                <form method="post" action="/keluar" style="display:inline;margin:0">
+                    @csrf
+                    <button type="submit" class="keluar">Keluar</button>
+                </form>
+            @else
+                <a href="/masuk" @class(['masuk' => true, 'aktif' => request()->is('masuk')])>Masuk</a>
+                <a href="/daftar" @class(['aktif' => request()->is('daftar')])>Daftar</a>
+            @endauth
         </nav>
     </div>
 </header>
@@ -166,6 +183,12 @@
                 <a href="/{{ $m['slug'] }}">{{ $m['judul'] }}</a>
             @endforeach
             <a href="/berita">Berita</a>
+            @auth
+                <a href="/anggota">Akun Saya</a>
+            @else
+                <a href="/daftar">Daftar Subscriber</a>
+                <a href="/masuk">Masuk</a>
+            @endauth
         </div>
         <div class="kecil">
             &copy; {{ date('Y') }} {{ $namaSitus }}. Seluruh hak cipta dilindungi.

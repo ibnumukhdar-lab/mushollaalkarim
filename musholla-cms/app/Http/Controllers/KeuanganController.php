@@ -101,7 +101,7 @@ class KeuanganController extends Controller
     /** Halaman yang tidak ditampilkan di menu publik. */
     private const BUKAN_MENU = [
         'home-page', 'home', 'laporan-kas', 'laporan-keuangan', 'user', 'login', 'register',
-        'members', 'logout', 'account', 'password-reset', 'privacy-policy',
+        'members', 'masuk', 'daftar', 'anggota', 'logout', 'keluar', 'account', 'password-reset', 'privacy-policy',
     ];
 
     private function menu(): array

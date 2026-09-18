@@ -18,7 +18,7 @@ class PublikController extends Controller
 
     /** Halaman yang tidak ditampilkan di menu publik (bawaan plugin WordPress). */
     private const BUKAN_MENU = [
-        'home', 'user', 'login', 'register', 'members', 'logout', 'account',
+        'home', 'user', 'login', 'masuk', 'register', 'daftar', 'anggota', 'members', 'logout', 'keluar', 'account',
         'password-reset', 'sukses-daftar', 'privacy-policy',
     ];
 

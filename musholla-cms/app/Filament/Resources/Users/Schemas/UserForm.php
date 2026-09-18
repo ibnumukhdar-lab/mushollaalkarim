@@ -27,10 +27,10 @@ class UserForm
                 Select::make('peran')
                     ->label('Peran')
                     ->options([
-                        'admin' => 'Admin — boleh masuk & mengelola',
-                        'anggota' => 'Anggota — pengguna biasa',
+                        'subscriber' => 'Subscriber — anggota biasa (hasil pendaftaran publik)',
+                        'admin' => 'Admin — boleh masuk & mengelola panel',
                     ])
-                    ->default('anggota')
+                    ->default('subscriber')
                     ->required()
                     ->native(false),
                 TextInput::make('password')
