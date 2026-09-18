@@ -1,0 +1,25 @@
+DAFTAR SNIPPET (logika aplikasi mushollaalkarim)
+
+01 | tidak aktif |       52 B | Make upload filenames lowercase
+02 | tidak aktif |      115 B | Disable admin bar
+03 | tidak aktif |      187 B | Allow smilies
+04 | tidak aktif |       26 B | Current year
+05 | AKTIF  |    53440 B | Coding Musholla
+06 | AKTIF  |    18177 B | UPDATE JADWAL KAJIAN
+07 | AKTIF  |    27871 B | Sistem Informasi Majelis Tadris Al-Qur'an (SIMTA) - Musholla Al Karim
+08 | AKTIF  |    30461 B | MODUL PERKEMBANGAN SANTRI
+09 | nonaktif |     7711 B | Short Code Dashboard Ustadz
+10 | AKTIF  |    18536 B | Dashboard Ustadz Shortcode
+11 | AKTIF  |    11921 B | Dahsboard Ortu
+12 | AKTIF  |     2151 B | METABOX RELASI SANTRI DENGAN AKUN ORANG TUA (USER)
+13 | AKTIF  |      848 B | SAPAAN ORTU
+14 | AKTIF  |    10151 B | SIMTA FORM PENDAFTARAN
+15 | nonaktif |    23893 B | WA Sender Donatur (Item 1)
+16 | nonaktif |    30004 B | WA Sender Donatur (Item 2)
+17 | nonaktif |     5537 B | WA Sender Donatur (Item 3)
+18 | AKTIF  |    30386 B | WA Sender Donatur (Style 2)
+19 | AKTIF  |    16907 B | PENDAFTAR LOMBA AZAN
+20 | tidak aktif |    13875 B | Penilaian Lomba Adzan
+21 | nonaktif |     2824 B | ROLE JURI
+22 | nonaktif |    25515 B | PENDAFTARAN LOMBA ADZAN
+23 | AKTIF  |    39311 B | Penilaian Lomba Azan V.2

@@ -1,0 +1,27 @@
+# Laravel
+/vendor/
+/node_modules/
+/public/build/
+/public/hot
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/storage/app/private/*
+/storage/app/public/*
+!.gitkeep
+.env
+.env.*
+!.env.example
+.phpunit.result.cache
+
+# WordPress (arsip — hanya kode yang penting)
+_arsip-wordpress/nama-acak/
+
+# cadangan & berkas besar
+*.zip
+*.sql
+*.sql.gz
+*.tar.gz
+_backup/
