@@ -54,7 +54,7 @@
         }
         body.menu-terbuka .sisi { transform: translateX(0); }
         .sisi-merek {
-            display: flex; align-items: center; gap: .6rem; padding: 1.05rem 1.1rem .95rem;
+            display: flex; align-items: center; gap: .55rem; padding: .8rem .95rem .75rem;
             border-bottom: 1px solid rgba(255,255,255,.12);
         }
         .sisi-merek .lambang {
@@ -69,26 +69,26 @@
             margin-left: auto; background: rgba(255,255,255,.12); border: 0; color: #fff;
             width: 32px; height: 32px; border-radius: 10px; cursor: pointer; font-size: 1rem; line-height: 1;
         }
-        .sisi-nav { flex: 1; overflow-y: auto; padding: .7rem .6rem 1.2rem; }
-        .sisi-grup { margin-bottom: .9rem; }
+        .sisi-nav { flex: 1; overflow-y: auto; padding: .35rem .6rem .7rem; }
+        .sisi-grup { margin-bottom: .35rem; }
         .sisi-grup > h6 {
-            margin: .5rem .7rem .4rem; font-size: .68rem; letter-spacing: 1.1px; text-transform: uppercase;
+            margin: .25rem .7rem .2rem; font-size: .66rem; letter-spacing: 1px; text-transform: uppercase;
             color: #9dc0ac; font-weight: 600;
         }
         .sisi-nav a {
-            display: flex; align-items: center; gap: .6rem; padding: .55rem .7rem; border-radius: 10px;
-            color: #dcebe2; font-size: .9rem; margin-bottom: .1rem;
+            display: flex; align-items: center; gap: .55rem; padding: .35rem .7rem; border-radius: 10px;
+            color: #dcebe2; font-size: .865rem; margin-bottom: .03rem;
         }
         .sisi-nav a:hover { background: rgba(255,255,255,.09); color: #fff; }
         .sisi-nav a.aktif { background: rgba(255,255,255,.16); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--emas); }
         .sisi-nav a svg { width: 17px; height: 17px; opacity: .9; }
-        .sisi-kaki { border-top: 1px solid rgba(255,255,255,.12); padding: .85rem 1rem 1.1rem; }
-        .sisi-kaki .nama { color: #fff; font-size: .88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sisi-kaki .peran { font-size: .72rem; color: #9dc0ac; margin-bottom: .6rem; }
+        .sisi-kaki { border-top: 1px solid rgba(255,255,255,.12); padding: .6rem .9rem .75rem; }
+        .sisi-kaki .nama { color: #fff; font-size: .86rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sisi-kaki .peran { font-size: .7rem; color: #9dc0ac; margin-bottom: .45rem; overflow-wrap: anywhere; }
         .sisi-kaki a, .sisi-kaki button {
             display: flex; align-items: center; gap: .5rem; width: 100%; background: rgba(255,255,255,.1);
-            border: 0; color: #eaf4ee; font: inherit; font-size: .85rem; padding: .5rem .7rem;
-            border-radius: 10px; cursor: pointer; margin-bottom: .35rem; text-align: left;
+            border: 0; color: #eaf4ee; font: inherit; font-size: .84rem; padding: .38rem .7rem;
+            border-radius: 10px; cursor: pointer; margin-bottom: .28rem; text-align: left;
         }
         .sisi-kaki a:hover, .sisi-kaki button:hover { background: rgba(255,255,255,.18); }
         .selubung {
@@ -302,20 +302,17 @@
             </div>
         @endforeach
 
-        <div class="sisi-grup">
-            <h6>Situs</h6>
-            <a href="{{ route('panel.pengaturan') }}" @class(['aktif' => request()->routeIs('panel.pengaturan')])>
-                @include('panel._ikon', ['nama' => 'gear']) Pengaturan Situs
-            </a>
-            <a href="{{ url('/') }}" target="_blank" rel="noopener">
-                @include('panel._ikon', ['nama' => 'situs']) Lihat Situs
-            </a>
-        </div>
     </nav>
 
     <div class="sisi-kaki">
         <div class="nama">{{ $namaPengurus }}</div>
         <div class="peran">{{ $u?->email }}</div>
+        <a href="{{ route('panel.pengaturan') }}" @class(['aktif' => request()->routeIs('panel.pengaturan')])>
+            @include('panel._ikon', ['nama' => 'gear']) Pengaturan Situs
+        </a>
+        <a href="{{ url('/') }}" target="_blank" rel="noopener">
+            @include('panel._ikon', ['nama' => 'situs']) Lihat Situs
+        </a>
         <a href="{{ url('/anggota') }}">
             @include('panel._ikon', ['nama' => 'akun']) Akun Saya
         </a>
