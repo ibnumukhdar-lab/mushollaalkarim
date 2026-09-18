@@ -35,4 +35,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/keluar', [AnggotaController::class, 'keluar'])->name('keluar');
 });
 
+/* Panel pengelola — rute buatan sendiri (bukan bawaan Filament), hanya peran admin */
+Route::middleware(['auth', 'panel.admin'])->prefix('kelola')->name('panel.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Panel\DasborController::class, 'index'])->name('dasbor');
+
+    Route::get('/pengaturan-situs', [\App\Http\Controllers\Panel\PengaturanController::class, 'index'])->name('pengaturan');
+    Route::post('/pengaturan-situs', [\App\Http\Controllers\Panel\PengaturanController::class, 'simpan'])->name('pengaturan.simpan');
+
+    Route::get('/{modul}', [\App\Http\Controllers\Panel\PanelController::class, 'daftar'])->name('daftar');
+    Route::get('/{modul}/tambah', [\App\Http\Controllers\Panel\PanelController::class, 'tambah'])->name('tambah');
+    Route::post('/{modul}', [\App\Http\Controllers\Panel\PanelController::class, 'simpan'])->name('simpan');
+    Route::get('/{modul}/{id}/ubah', [\App\Http\Controllers\Panel\PanelController::class, 'ubah'])->name('ubah');
+    Route::put('/{modul}/{id}', [\App\Http\Controllers\Panel\PanelController::class, 'perbarui'])->name('perbarui');
+    Route::delete('/{modul}/{id}', [\App\Http\Controllers\Panel\PanelController::class, 'hapus'])->name('hapus');
+});
+
 Route::get('/{slug}', [PublikController::class, 'halaman'])->name('halaman');

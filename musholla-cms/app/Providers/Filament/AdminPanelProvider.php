@@ -26,7 +26,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('kelola')
+            ->path('panel-filament')
             ->brandName('Al Karim — Kelola')
             ->login()
             ->colors([
