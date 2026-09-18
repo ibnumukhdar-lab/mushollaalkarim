@@ -53,9 +53,17 @@
                                 @php
                                     [$teks, $kelas] = \App\Support\Panel::nilaiKolom($r, $k);
                                     $rataKanan = in_array($k['tipe'] ?? '', ['uang', 'angka'], true);
+                                    $tipeKolom = $k['tipe'] ?? 'teks';
                                 @endphp
                                 <td data-label="{{ $k['label'] }}" @class(['angka' => $rataKanan])>
-                                    @if ($kelas !== '')
+                                    @if ($tipeKolom === 'gambar')
+                                        @php $tautanGambar = data_get($r, 'gambar_sampul'); @endphp
+                                        @if ($tautanGambar)
+                                            <img src="{{ $tautanGambar }}" alt="" class="potong-gambar-mini" loading="lazy">
+                                        @else
+                                            <span class="potong-gambar-mini" style="display:inline-block;background:var(--hijau-muda)"></span>
+                                        @endif
+                                    @elseif ($kelas !== '')
                                         <span class="lencana {{ $kelas }}">{{ $teks }}</span>
                                     @else
                                         {{ $teks }}

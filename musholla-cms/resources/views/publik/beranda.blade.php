@@ -12,6 +12,44 @@
         </div>
     </section>
 
+    @if ($berita->isNotEmpty())
+        <h2 class="bagian">Kabar Terbaru</h2>
+        <p class="bagian-ket">Kegiatan &amp; pengumuman terakhir dari musholla.</p>
+        <div class="berita-alir" data-alir>
+            <div class="berita-alir-jalur">
+                @foreach ($berita as $b)
+                    @php
+                        $gambarSampul = $b->gambar_sampul;
+                        $chipKategori = $b->kategori_utama;
+                        $ringkasBerita = \App\Support\Tulis::ringkas($b->ringkasan ?: $b->isi, 120);
+                    @endphp
+                    <article class="berita-kartu">
+                        <a class="berita-kartu-tautan" href="/berita/{{ $b->slug }}">
+                            <span class="berita-gambar">
+                                @if ($gambarSampul)
+                                    <img src="{{ $gambarSampul }}" alt="{{ $b->judul }}" loading="lazy">
+                                @else
+                                    <span class="berita-gambar-kosong">@include('publik._ikon', ['nama' => 'masjid'])</span>
+                                @endif
+                                @if ($chipKategori)
+                                    <span class="berita-chip">{{ $chipKategori }}</span>
+                                @endif
+                            </span>
+                            <span class="berita-isi">
+                                <span class="tanggal">{{ $b->terbit_at?->translatedFormat('d F Y') }}</span>
+                                <h3>{{ $b->judul }}</h3>
+                                @if ($ringkasBerita)
+                                    <span class="berita-ringkas">{{ $ringkasBerita }}</span>
+                                @endif
+                            </span>
+                        </a>
+                    </article>
+                @endforeach
+            </div>
+            <div class="berita-titik" data-titik aria-hidden="true"></div>
+        </div>
+    @endif
+
     @if (! empty($programHari) && $programHari['data']->isNotEmpty())
         <h2 class="bagian">Program Sepekan</h2>
         <p class="bagian-ket">Kegiatan rutin musholla setiap hari — silakan hadir dan makmurkan bersama.</p>
@@ -55,19 +93,6 @@
         </section>
     @endif
 
-    @if ($berita->isNotEmpty())
-        <h2 class="bagian">Kabar & Berita</h2>
-        <div class="jaring tiga">
-            @foreach ($berita as $b)
-                <a class="kartu" href="/berita/{{ $b->slug }}" style="color:inherit">
-                    <div class="tanggal">{{ $b->terbit_at?->translatedFormat('d F Y') }}</div>
-                    <h3>{{ $b->judul }}</h3>
-                    <p>{{ \App\Services\BersihkanTampilan::ringkas($b->ringkasan ?: $b->isi, 120) }}</p>
-                </a>
-            @endforeach
-        </div>
-    @endif
-
     @if ($kajian->isNotEmpty())
         <h2 class="bagian">Jadwal Kajian</h2>
         <div class="jaring dua">
@@ -102,3 +127,65 @@
         </div>
     @endif
 @endsection
+
+@push('skrip')
+    <script>
+        // Kabar terbaru: alir otomatis di layar kecil, grid 3 kolom di layar lebar
+        document.querySelectorAll('[data-alir]').forEach(function (wadah) {
+            var jalur = wadah.querySelector('.berita-alir-jalur');
+            var titik = wadah.querySelector('[data-titik]');
+            if (!jalur) return;
+            var kartu = Array.prototype.slice.call(jalur.querySelectorAll('.berita-kartu'));
+            if (kartu.length < 2) return;
+
+            function posisiKartu(i) {
+                return kartu[i].offsetLeft - kartu[0].offsetLeft;
+            }
+            function terdekat() {
+                var pos = jalur.scrollLeft, pilih = 0, jarak = Infinity;
+                kartu.forEach(function (k, i) {
+                    var d = Math.abs(posisiKartu(i) - pos);
+                    if (d < jarak) { jarak = d; pilih = i; }
+                });
+                return pilih;
+            }
+            function tandai() {
+                if (!titik) return;
+                var aktif = terdekat();
+                titik.querySelectorAll('button').forEach(function (b, i) { b.classList.toggle('aktif', i === aktif); });
+            }
+
+            if (titik) {
+                kartu.forEach(function (k, i) {
+                    var t = document.createElement('button');
+                    t.type = 'button';
+                    t.setAttribute('aria-label', 'Ke kabar ' + (i + 1));
+                    t.addEventListener('click', function () { jalur.scrollTo({ left: posisiKartu(i), behavior: 'smooth' }); });
+                    titik.appendChild(t);
+                });
+            }
+
+            jalur.addEventListener('scroll', tandai);
+            tandai();
+
+            var modeAlir = function () { return window.matchMedia('(max-width: 899px)').matches; };
+            var tahan = false;
+
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                setInterval(function () {
+                    if (!modeAlir() || tahan) return;
+                    var berikut = (terdekat() + 1) % kartu.length;
+                    jalur.scrollTo({ left: posisiKartu(berikut), behavior: 'smooth' });
+                    tandai();
+                }, 5000);
+            }
+
+            ['pointerdown', 'touchstart', 'mouseenter'].forEach(function (ev) {
+                jalur.addEventListener(ev, function () { tahan = true; });
+            });
+            ['pointerup', 'touchend', 'mouseleave'].forEach(function (ev) {
+                jalur.addEventListener(ev, function () { window.setTimeout(function () { tahan = false; }, 1500); });
+            });
+        });
+    </script>
+@endpush

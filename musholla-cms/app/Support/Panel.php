@@ -7,6 +7,7 @@ use App\Models\Donatur;
 use App\Models\Infaq;
 use App\Models\Kajian;
 use App\Models\Kas;
+use App\Models\Kategori;
 use App\Models\Page;
 use App\Models\Program;
 use App\Models\User;
@@ -45,22 +46,50 @@ class Panel
                 'judulSatu' => 'Berita',
                 'ikon' => 'kabar',
                 'model' => Berita::class,
-                'keterangan' => 'Kabar & kegiatan musholla yang tampil di halaman berita.',
+                'keterangan' => 'Tulisan/kabar musholla. Kosongkan “Terbit pada” bila masih draf — draf tidak tampil di situs.',
                 'cari' => ['judul', 'ringkasan', 'kategori'],
                 'urut' => ['terbit_at' => 'desc', 'id' => 'desc'],
                 'kolom' => [
+                    ['nama' => 'gambar_path', 'label' => '', 'tipe' => 'gambar'],
                     ['nama' => 'judul', 'label' => 'Judul'],
-                    ['nama' => 'kategori', 'label' => 'Kategori'],
+                    ['nama' => 'kategori_utama', 'label' => 'Kategori', 'tipe' => 'lencana'],
                     ['nama' => 'terbit_at', 'label' => 'Terbit', 'tipe' => 'tanggal'],
                 ],
                 'field' => [
-                    ['nama' => 'judul', 'label' => 'Judul berita', 'tipe' => 'teks', 'wajib' => true, 'rules' => ['required', 'max:200'], 'lebar' => 'penuh'],
-                    ['nama' => 'slug', 'label' => 'Slug (alamat)', 'tipe' => 'teks', 'rules' => ['nullable', 'max:200'], 'bantuan' => 'Kosongkan agar dibuat otomatis dari judul.'],
-                    ['nama' => 'kategori', 'label' => 'Kategori', 'tipe' => 'teks', 'rules' => ['nullable', 'max:60'], 'bantuan' => 'mis. Kajian, Kegiatan, Pengumuman'],
-                    ['nama' => 'terbit_at', 'label' => 'Waktu terbit', 'tipe' => 'tanggal-waktu', 'rules' => ['nullable', 'date']],
-                    ['nama' => 'ringkasan', 'label' => 'Ringkasan', 'tipe' => 'teks-panjang', 'rules' => ['nullable', 'max:500'], 'baris' => 3, 'lebar' => 'penuh'],
-                    ['nama' => 'isi', 'label' => 'Isi berita', 'tipe' => 'teks-panjang', 'rules' => ['nullable'], 'baris' => 14, 'lebar' => 'penuh'],
-                    ['nama' => 'gambar_path', 'label' => 'Gambar utama', 'tipe' => 'berkas', 'rules' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'], 'lebar' => 'penuh'],
+                    ['nama' => 'judul', 'label' => 'Judul tulisan', 'tipe' => 'teks', 'bagian' => 'Isi tulisan', 'wajib' => true, 'rules' => ['required', 'max:200'], 'lebar' => 'penuh'],
+                    ['nama' => 'slug', 'label' => 'Slug (alamat)', 'tipe' => 'teks', 'bagian' => 'Isi tulisan', 'rules' => ['nullable', 'max:200'], 'bantuan' => 'Kosongkan agar dibuat otomatis dari judul.'],
+                    ['nama' => 'isi', 'label' => 'Isi tulisan', 'tipe' => 'teks-panjang', 'bagian' => 'Isi tulisan', 'rules' => ['nullable'], 'baris' => 16, 'lebar' => 'penuh', 'editor' => true,
+                        'bantuan' => 'Tombol menyisipkan penanda teks: ## sub-judul, **tebal**, *miring*, - daftar, > kutipan, [teks](tautan). Dirapikan otomatis saat tampil di situs.'],
+                    ['nama' => 'terbit_at', 'label' => 'Terbit pada', 'tipe' => 'tanggal-waktu', 'bagian' => 'Publikasi', 'rules' => ['nullable', 'date'],
+                        'bantuan' => 'Kosongkan = simpan sebagai draf (belum tampil di situs).'],
+                    ['nama' => 'kategori_ids', 'label' => 'Kategori', 'tipe' => 'pilihan-banyak', 'bagian' => 'Publikasi', 'relasi' => 'kategoriBanyak',
+                        'sumber' => Kategori::class, 'rules' => ['nullable', 'array'], 'bantuan' => 'Boleh pilih lebih dari satu — dipakai untuk chip & penyaringan di situs.'],
+                    ['nama' => 'gambar_path', 'label' => 'Gambar sampul (1:1)', 'tipe' => 'berkas', 'bagian' => 'Publikasi', 'lebar' => 'penuh',
+                        'rules' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+                        'bantuan' => 'Pilih gambar lalu atur potongannya (persegi 1:1) sebelum disimpan.'],
+                    ['nama' => 'ringkasan', 'label' => 'Ringkasan (opsional)', 'tipe' => 'teks-panjang', 'bagian' => 'Ringkasan (opsional)', 'rules' => ['nullable', 'max:500'], 'baris' => 3, 'lebar' => 'penuh',
+                        'bantuan' => 'Tampil pada kartu berita di beranda. Bila kosong, diambil dari awal isi tulisan.'],
+                ],
+            ],
+
+            'kategori' => [
+                'grup' => 'konten',
+                'judul' => 'Kategori',
+                'judulSatu' => 'Kategori',
+                'ikon' => 'halaman',
+                'model' => Kategori::class,
+                'keterangan' => 'Kategori dipakai untuk mengelompokkan berita (boleh banyak per tulisan).',
+                'cari' => ['nama', 'slug'],
+                'urut' => ['urut' => 'asc', 'nama' => 'asc'],
+                'kolom' => [
+                    ['nama' => 'nama', 'label' => 'Nama'],
+                    ['nama' => 'slug', 'label' => 'Slug'],
+                    ['nama' => 'urut', 'label' => 'Urutan', 'tipe' => 'angka'],
+                ],
+                'field' => [
+                    ['nama' => 'nama', 'label' => 'Nama kategori', 'tipe' => 'teks', 'wajib' => true, 'rules' => ['required', 'max:120'], 'lebar' => 'penuh'],
+                    ['nama' => 'slug', 'label' => 'Slug', 'tipe' => 'teks', 'rules' => ['nullable', 'max:140'], 'bantuan' => 'Kosongkan agar dibuat otomatis dari nama.'],
+                    ['nama' => 'urut', 'label' => 'Urutan', 'tipe' => 'angka', 'rules' => ['nullable', 'integer']],
                 ],
             ],
 

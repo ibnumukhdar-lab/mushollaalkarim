@@ -30,7 +30,14 @@ class BersihkanTampilan
     /** Awalan shortcode yang tidak punya padanan di aplikasi baru. */
     private const SHORTCODE_AWALAN = ['simta_', 'um_', 'musholla_', 'kas_', 'wa_'];
 
-    public static function bersihkan(?string $html): string
+    /**
+     * @param  bool  $sapuWarisan  true = jalankan penyapu kode/skrip warisan
+     *                             (untuk isi lama WordPress). Set false untuk
+     *                             HTML yang dihasilkan aplikasi sendiri
+     *                             (mis. hasil App\Support\Tulis) — penyapu itu
+     *                             memakan tag yang berdampingan, mis. "</h2><p>".
+     */
+    public static function bersihkan(?string $html, bool $sapuWarisan = true): string
     {
         if (! $html || trim($html) === '') {
             return '';
@@ -56,23 +63,25 @@ class BersihkanTampilan
             $t
         ) ?? $t;
 
-        // 3. sisa kode CSS yang terselip di dalam teks
-        $t = self::sapuKode($t);
+        if ($sapuWarisan) {
+            // 3. sisa kode CSS yang terselip di dalam teks
+            $t = self::sapuKode($t);
 
-        // 3b. sisa kode JavaScript yang terselip sebagai teks biasa
-        //     (isi lama kadang menyimpan potongan <script> tanpa tagnya)
-        $t = self::sapuSkrip($t);
+            // 3b. sisa kode JavaScript yang terselip sebagai teks biasa
+            //     (isi lama kadang menyimpan potongan <script> tanpa tagnya)
+            $t = self::sapuSkrip($t);
 
-        // 4. keterangan widget lama yang tidak lagi berfungsi
-        $t = preg_replace('~[^<>]{0,20}Memuat data [^<>]{0,40}~iu', ' ', $t) ?? $t;
-        $t = preg_replace('~[^<>]{0,20}(Sedang memuat|Menghubungkan ke|Gagal memuat)[^<>]{0,40}~iu', ' ', $t) ?? $t;
+            // 4. keterangan widget lama yang tidak lagi berfungsi
+            $t = preg_replace('~[^<>]{0,20}Memuat data [^<>]{0,40}~iu', ' ', $t) ?? $t;
+            $t = preg_replace('~[^<>]{0,20}(Sedang memuat|Menghubungkan ke|Gagal memuat)[^<>]{0,40}~iu', ' ', $t) ?? $t;
+        }
 
         // 5. kejadian dalam tag yang menyisakan perilaku lama
         $t = preg_replace('~\s(?:onclick|onload|onerror|onchange|data-nosnippet)="[^"]*"~i', '', $t) ?? $t;
 
         // 6. wadah yang kini kosong
         for ($i = 0; $i < 5; $i++) {
-            $t = preg_replace('~<(p|div|span|li|section|article)\b[^>]*>(?:\s|&nbsp;|<br\s*/?>)*</\1>~i', '', $t) ?? $t;
+            $t = preg_replace('~<(p|div|span|li|section|article)\b[^>]*>(\s|&nbsp;|<br\s*/?>)*</\1>~i', '', $t) ?? $t;
         }
 
         // 7. rapikan

@@ -231,6 +231,64 @@
         }
         .tombol-kecil:hover { background: #dcece3; text-decoration: none; }
 
+        /* ================= kabar terbaru (grid 3 kolom / alir di HP) ================= */
+        .cari-berita { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .9rem; }
+        .cari-berita input[type=search] {
+            font: inherit; font-size: .9rem; padding: .5rem .75rem; border: 1px solid var(--garis);
+            border-radius: 10px; background: #fff; flex: 1 1 14rem; min-width: 0;
+        }
+        .chip-baris { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.2rem; }
+        .chip-kategori {
+            display: inline-block; font-size: .78rem; font-weight: 600; padding: .25rem .65rem; border-radius: 999px;
+            background: var(--kartu); border: 1px solid var(--garis); color: var(--tinta-muda);
+        }
+        .chip-kategori:hover { background: var(--hijau-muda); text-decoration: none; }
+        .chip-kategori.aktif { background: var(--hijau); border-color: var(--hijau); color: #fff; }
+        .halaman { display: flex; justify-content: center; align-items: center; gap: .35rem; margin-top: 1.3rem; flex-wrap: wrap; }
+        .halaman a, .halaman span {
+            min-width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+            border: 1px solid var(--garis); border-radius: 9px; background: #fff; font-size: .84rem;
+            color: var(--tinta-muda); padding: 0 .6rem;
+        }
+        .halaman a:hover { background: var(--hijau-muda); text-decoration: none; }
+        .halaman .aktif { background: var(--hijau); border-color: var(--hijau); color: #fff; font-weight: 600; }
+        .berita-alir { margin-bottom: 1.8rem; }
+        .berita-alir-jalur {
+            display: flex; gap: .9rem; overflow-x: auto; scroll-snap-type: x mandatory;
+            padding-bottom: .5rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .berita-alir-jalur::-webkit-scrollbar { display: none; }
+        .berita-kartu { flex: 0 0 min(84%, 330px); scroll-snap-align: center; }
+        .berita-kartu-tautan {
+            display: flex; flex-direction: column; height: 100%;
+            background: var(--kartu); border: 1px solid var(--garis); border-radius: var(--radius);
+            overflow: hidden; box-shadow: 0 1px 2px rgba(47, 96, 70, .05); color: inherit;
+        }
+        .berita-kartu-tautan:hover { text-decoration: none; border-color: var(--hijau-lembut); }
+        .berita-gambar { position: relative; display: block; aspect-ratio: 1 / 1; background: var(--hijau-muda); overflow: hidden; }
+        .berita-gambar img { width: 100%; height: 100%; object-fit: cover; border-radius: 0; display: block; }
+        .berita-gambar-kosong { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--hijau-lembut); }
+        .berita-gambar-kosong svg { width: 34%; height: 34%; }
+        .berita-chip {
+            position: absolute; left: .6rem; top: .6rem; font-size: .66rem; font-weight: 700; letter-spacing: .5px;
+            text-transform: uppercase; background: rgba(255, 255, 255, .94); color: var(--hijau-tua);
+            padding: .2rem .55rem; border-radius: 999px;
+        }
+        .berita-isi { display: block; padding: .85rem .95rem 1rem; }
+        .berita-isi h3 { margin: .2rem 0 .35rem; font-size: .96rem; color: var(--hijau-tua); line-height: 1.4; }
+        .berita-ringkas { display: block; font-size: .85rem; color: var(--tinta-muda); line-height: 1.55; }
+        .berita-titik { display: flex; gap: .35rem; justify-content: center; margin-top: .3rem; }
+        .berita-titik button {
+            width: 7px; height: 7px; padding: 0; border: 0; border-radius: 999px; cursor: pointer;
+            background: var(--hijau-garis);
+        }
+        .berita-titik button.aktif { background: var(--hijau); width: 18px; }
+        @media (min-width: 900px) {
+            .berita-alir-jalur { display: grid; grid-template-columns: repeat(3, 1fr); overflow: visible; }
+            .berita-kartu { flex: none; }
+            .berita-titik { display: none; }
+        }
+
         /* ================= jadwal program sepekan ================= */
         .bagian-ket { font-size: .86rem; color: var(--tinta-muda); margin: -.4rem 0 1rem; }
         .jaring.jadwal { grid-template-columns: 1fr; }

@@ -231,6 +231,30 @@
         .lampiran-lama img { max-height: 70px; border-radius: 9px; border: 1px solid var(--garis); }
         .kaki-form { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--garis); }
 
+        /* pengelompokan formulir (bagian) */
+        .form-bagian { margin: 0 0 .9rem; font-size: .95rem; color: var(--hijau-tua); display: flex; align-items: center; gap: .5rem; }
+        .form-bagian::before { content: ""; width: 4px; height: 1em; border-radius: 3px; background: var(--hijau-lembut); }
+
+        /* pilihan banyak (kategori) */
+        .pilihan-banyak { display: flex; flex-wrap: wrap; gap: .45rem; }
+        .kotak-centang {
+            display: inline-flex; align-items: center; gap: .45rem; font-size: .87rem; font-weight: 500;
+            color: var(--tinta); border: 1px solid var(--garis); border-radius: 10px; padding: .38rem .7rem;
+            background: #fff; cursor: pointer; margin: 0;
+        }
+        .kotak-centang:hover { background: var(--hijau-muda); }
+        .kotak-centang input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--hijau); margin: 0; }
+        .kotak-centang:has(input:checked) { background: var(--hijau-muda); border-color: var(--hijau-lembut); color: var(--hijau-tua); font-weight: 600; }
+
+        /* perkakas penulisan */
+        .editor-alat { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .4rem; }
+        .editor-alat button {
+            font: inherit; font-size: .78rem; font-weight: 600; padding: .3rem .6rem; border-radius: 9px;
+            border: 1px solid var(--garis); background: #fff; color: var(--hijau-tua); cursor: pointer;
+        }
+        .editor-alat button:hover { background: var(--hijau-muda); }
+        .potong-gambar-mini { width: 44px; height: 44px; object-fit: cover; border-radius: 9px; border: 1px solid var(--garis); display: block; }
+
         .halaman { display: flex; justify-content: center; gap: .3rem; margin-top: 1rem; flex-wrap: wrap; }
         .halaman a, .halaman span {
             min-width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;

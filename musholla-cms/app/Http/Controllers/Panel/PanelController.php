@@ -55,7 +55,8 @@ class PanelController extends Controller
         $def = Panel::satu($modul);
         abort_if(! empty($def['hanyaLihat']), 403);
 
-        $data = $this->siapkanData($request, $modul, $def, null);
+        $siap = $this->siapkanData($request, $modul, $def, null);
+        $data = $siap['data'];
 
         $model = $def['model'];
         $rekaman = new $model();
@@ -63,6 +64,8 @@ class PanelController extends Controller
             $rekaman->{$k} = $v;
         }
         $rekaman->save();
+
+        $this->simpanRelasi($rekaman, $siap['relasi']);
 
         return redirect()->route('panel.daftar', $modul)->with('sukses', $def['judulSatu'] . ' baru tersimpan.');
     }
@@ -82,13 +85,25 @@ class PanelController extends Controller
         abort_if(! empty($def['hanyaLihat']), 403);
         $rekaman = $def['model']::findOrFail($id);
 
-        $data = $this->siapkanData($request, $modul, $def, $rekaman);
-        foreach ($data as $k => $v) {
+        $siap = $this->siapkanData($request, $modul, $def, $rekaman);
+        foreach ($siap['data'] as $k => $v) {
             $rekaman->{$k} = $v;
         }
         $rekaman->save();
 
+        $this->simpanRelasi($rekaman, $siap['relasi']);
+
         return redirect()->route('panel.daftar', $modul)->with('sukses', $def['judulSatu'] . ' berhasil diperbarui.');
+    }
+
+    /** Sinkronkan pilihan banyak (mis. kategori berita). */
+    private function simpanRelasi($rekaman, array $relasi): void
+    {
+        foreach ($relasi as $nama => $ids) {
+            if (method_exists($rekaman, $nama)) {
+                $rekaman->{$nama}()->sync($ids);
+            }
+        }
     }
 
     public function hapus(string $modul, int $id)
@@ -139,6 +154,7 @@ class PanelController extends Controller
 
         $bersih = $request->validate($aturan, $pesan);
         $data = [];
+        $relasi = [];
 
         foreach ($def['field'] as $f) {
             $nama = $f['nama'];
@@ -148,6 +164,13 @@ class PanelController extends Controller
                 $isi = (string) $request->input($nama, '');
                 if ($isi !== '') {
                     $data[$nama] = Hash::make($isi);
+                }
+                continue;
+            }
+
+            if ($tipe === 'pilihan-banyak') {
+                if (! empty($f['relasi'])) {
+                    $relasi[$f['relasi']] = array_values(array_filter((array) $request->input($nama, [])));
                 }
                 continue;
             }
@@ -208,7 +231,7 @@ class PanelController extends Controller
                 : ($rekaman?->diverifikasi_oleh);
         }
 
-        return $data;
+        return ['data' => $data, 'relasi' => $relasi];
     }
 
     private function slugUnik(string $model, string $slug, ?int $kecuali = null): string

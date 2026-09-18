@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Berita;
 use App\Models\Kajian;
+use App\Models\Kategori;
 use App\Models\Page;
 use App\Models\Pengaturan;
 use App\Models\Program;
 use App\Models\WakafProgram;
+use Illuminate\Http\Request;
 
 class PublikController extends Controller
 {
@@ -42,7 +44,7 @@ class PublikController extends Controller
         return view('publik.beranda', [
             'hal' => $hal,
             'menu' => $this->menu(),
-            'berita' => Berita::query()->orderByDesc('terbit_at')->limit(3)->get(),
+            'berita' => Berita::query()->terbit()->with('kategoriBanyak')->orderByDesc('terbit_at')->limit(3)->get(),
             'wakaf' => WakafProgram::query()->where('aktif', true)->orderBy('urutan')->get(),
             'kajian' => Kajian::query()->where('aktif', true)->orderByDesc('tanggal')->limit(4)->get(),
             'programHari' => [
@@ -65,23 +67,45 @@ class PublikController extends Controller
         ]);
     }
 
-    public function berita()
+    public function berita(Request $request)
     {
+        $cari = trim((string) $request->input('q', ''));
+        $slugKategori = (string) $request->input('kategori', '');
+
+        $daftar = Berita::query()
+            ->terbit()
+            ->with('kategoriBanyak')
+            ->when($cari !== '', function ($w) use ($cari) {
+                $w->where(function ($x) use ($cari) {
+                    $x->where('judul', 'like', '%' . $cari . '%')
+                        ->orWhere('ringkasan', 'like', '%' . $cari . '%')
+                        ->orWhere('isi', 'like', '%' . $cari . '%');
+                });
+            })
+            ->when($slugKategori !== '', fn ($w) => $w->whereHas('kategoriBanyak', fn ($x) => $x->where('slug', $slugKategori)))
+            ->orderByDesc('terbit_at')
+            ->paginate(9)
+            ->withQueryString();
+
         return view('publik.berita-index', [
             'menu' => $this->menu(),
-            'daftar' => Berita::query()->orderByDesc('terbit_at')->paginate(9),
+            'daftar' => $daftar,
+            'cari' => $cari,
+            'kategoriAktif' => $slugKategori,
+            'kategori' => Kategori::query()->orderBy('urut')->orderBy('nama')->get(),
             'pengaturan' => $this->pengaturan(),
         ]);
     }
 
     public function beritaSatu(string $slug)
     {
-        $tulisan = Berita::query()->where('slug', $slug)->firstOrFail();
+        $tulisan = Berita::query()->where('slug', $slug)->with(['kategoriBanyak', 'penulis'])->firstOrFail();
 
         return view('publik.berita', [
             'tulisan' => $tulisan,
             'menu' => $this->menu(),
-            'lain' => Berita::query()->where('id', '!=', $tulisan->id)->orderByDesc('terbit_at')->limit(3)->get(),
+            'lain' => Berita::query()->terbit()->with('kategoriBanyak')
+                ->where('id', '!=', $tulisan->id)->orderByDesc('terbit_at')->limit(3)->get(),
             'pengaturan' => $this->pengaturan(),
         ]);
     }
