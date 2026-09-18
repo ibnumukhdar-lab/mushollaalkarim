@@ -59,6 +59,10 @@ class BersihkanTampilan
         // 3. sisa kode CSS yang terselip di dalam teks
         $t = self::sapuKode($t);
 
+        // 3b. sisa kode JavaScript yang terselip sebagai teks biasa
+        //     (isi lama kadang menyimpan potongan <script> tanpa tagnya)
+        $t = self::sapuSkrip($t);
+
         // 4. keterangan widget lama yang tidak lagi berfungsi
         $t = preg_replace('~[^<>]{0,20}Memuat data [^<>]{0,40}~iu', ' ', $t) ?? $t;
         $t = preg_replace('~[^<>]{0,20}(Sedang memuat|Menghubungkan ke|Gagal memuat)[^<>]{0,40}~iu', ' ', $t) ?? $t;
@@ -108,6 +112,81 @@ class BersihkanTampilan
 
         // 3. deretan "sifat: nilai;" panjang (ciri khas CSS tanpa kurawal)
         $t = preg_replace('~(?:[a-z\-]{2,22}\s*:\s*[^;{}<>]{1,70};\s*){3,}~i', ' ', $t) ?? $t;
+
+        return $t;
+    }
+
+    /**
+     * Sapu potongan JavaScript yang ikut tersimpan sebagai teks.
+     *
+     * Isi warisan WordPress kadang menyimpan isi <script> tanpa tagnya, sehingga
+     * kode tampil sebagai paragraf. Pola di bawah sengaja mensyaratkan tanda khas
+     * kode (titik koma, =>, { }, atau penugasan DOM) supaya kalimat asli aman.
+     */
+    private static function sapuSkrip(string $t): string
+    {
+        // deklarasi: const/let/var ... = ...;
+        $t = preg_replace('~\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=[^;<>{}]{1,300};?~u', ' ', $t) ?? $t;
+
+        // fungsi: function nama(...) { ... }
+        $t = preg_replace('~\b(?:async\s+)?function\s*[A-Za-z_$]*\s*\([^)]{0,120}\)\s*\{[^{}]{0,800}\}~u', ' ', $t) ?? $t;
+
+        // panah: nama(...) => ...;
+        $t = preg_replace('~[A-Za-z_$][\w$.]{0,40}\s*\([^()<>]{0,120}\)\s*=>\s*[^;<>{}]{0,200};?~u', ' ', $t) ?? $t;
+
+        // penugasan properti DOM: document.x.y = ...;
+        $t = preg_replace('~\b(?:document|window|this)\s*\.[\w.]{1,60}\s*=[^;<>{}]{0,200};~u', ' ', $t) ?? $t;
+
+        // pemanggilan beruntun khas kode
+        $t = preg_replace('~\.(?:forEach|then|catch|map|filter|push|querySelector(?:All)?|addEventListener|getElementById|innerHTML|innerText|style)\b[^;<>{}]{0,160};?~u', ' ', $t) ?? $t;
+
+        // fetch/await
+        $t = preg_replace('~\b(?:await\s+|const\s+\w+\s*=\s*)?fetch\s*\([^()<>]{0,200}\)[^;<>{}]{0,120};?~u', ' ', $t) ?? $t;
+
+        // try / catch / finally blok
+        $t = preg_replace('~\b(?:try|catch|finally)\s*(?:\([^)]{0,80}\))?\s*\{[^{}]{0,600}\}~u', ' ', $t) ?? $t;
+
+        // JSON.stringify / .json() yang tersisa
+        $t = preg_replace('~\bJSON\.\w+\([^()<>]{0,120}\)~u', ' ', $t) ?? $t;
+
+        // URL internal WordPress / Apps Script yang bocor sebagai teks
+        $t = preg_replace('~[\'"`](?:https?://|/wp-json/)[^\'"`<>]{0,200}[\'"`]~u', ' ', $t) ?? $t;
+
+        // Pemeriksaan per kalimat: kalimat yang mengandung tanda khas kode dibuang,
+        // kalimat bersih di sekitarnya tetap dipertahankan.
+        $t = preg_replace_callback('~[^<>]{4,800}~u', function (array $m): string {
+            $tanda = ['=>', '+=', '${', '`', 'console.', 'innerHTML', 'innerText', 'addEventListener',
+                '.style', '.persen', '.info', 'function(', 'async ', '(){', '});', 'document.', 'window.',
+                '||', '===', '!==', ' = ', ');', 'new Date', 'var(', 'json()',
+                'document', 'window', 'console', 'querySelector', 'function', 'getElementById', 'innerHTML'];
+
+            $bagian = preg_split('~(?<=[.;!?])\s+~u', $m[0]) ?: [$m[0]];
+            $sisa = [];
+            foreach ($bagian as $b) {
+                $kotor = false;
+                foreach ($tanda as $c) {
+                    if (str_contains($b, $c)) {
+                        $kotor = true;
+                        break;
+                    }
+                }
+                if (! $kotor) {
+                    $sisa[] = $b;
+                }
+            }
+
+            return implode(' ', $sisa);
+        }, $t) ?? $t;
+
+        // kurung kurawal sisa dari kode
+        $t = str_replace(['{', '}'], ' ', $t);
+
+        // sisa remah kode: warna heksa, tanda baca berdiri sendiri, potongan simbol
+        $t = preg_replace('~#[0-9A-Fa-f]{3,8}~u', ' ', $t) ?? $t;
+        $t = preg_replace('~(?<![a-zA-Z0-9])[^<>a-zA-Z0-9\s]{1,10}(?![a-zA-Z0-9])~u', ' ', $t) ?? $t;
+        // remah pembanding dari kode (mis. ">> > 100 < 100")
+        $t = preg_replace('~(?:[<>]{1,3}\s*){2,}~u', ' ', $t) ?? $t;
+        $t = preg_replace('~[<>]=?\s*\d+(?![0-9])~u', ' ', $t) ?? $t;
 
         return $t;
     }
