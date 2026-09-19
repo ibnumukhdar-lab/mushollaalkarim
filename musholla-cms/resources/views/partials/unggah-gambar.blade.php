@@ -98,11 +98,18 @@
     @if ($berkasLama)
         <div class="unggah-lama">
             @if ($lamaPdf)
-                <span class="unggah-chip">PDF</span>
+                <a class="unggah-lama-tautan" href="{{ $tautanLama }}" target="_blank" rel="noopener"
+                   data-pratinjau="{{ $tautanLama }}" data-pratinjau-nama="{{ basename($berkasLama) }}" title="Lihat dokumen">
+                    <span class="unggah-chip">PDF</span>
+                </a>
             @else
-                <img src="{{ $tautanLama }}" alt="Berkas tersimpan" loading="lazy">
+                <a class="unggah-lama-tautan" href="{{ $tautanLama }}" target="_blank" rel="noopener"
+                   data-pratinjau="{{ $tautanLama }}" data-pratinjau-nama="{{ basename($berkasLama) }}" title="Lihat berkas">
+                    <img src="{{ $tautanLama }}" alt="Berkas tersimpan" loading="lazy">
+                </a>
             @endif
-            <span>Tersimpan saat ini — <a href="{{ $tautanLama }}" target="_blank" rel="noopener">lihat berkas</a></span>
+            <span>Tersimpan saat ini — <a href="{{ $tautanLama }}" target="_blank" rel="noopener"
+                    data-pratinjau="{{ $tautanLama }}" data-pratinjau-nama="{{ basename($berkasLama) }}">lihat berkas</a></span>
         </div>
     @endif
 </div>
@@ -182,6 +189,7 @@
             }
             .unggah-lama .unggah-chip { width: 52px; height: 52px; }
             .unggah-lama a { color: var(--hijau-tua, #2f6046); text-decoration: underline; }
+            .unggah-lama a.unggah-lama-tautan { text-decoration: none; line-height: 0; }
             .unggah-taruh { background: var(--hijau-muda, #edf5f0); border-radius: 12px; }
         </style>
     @endpush

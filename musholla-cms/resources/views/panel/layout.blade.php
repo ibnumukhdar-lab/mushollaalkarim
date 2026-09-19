@@ -300,6 +300,42 @@
             .kepala-judul .remah { display: none; }
         }
 
+        /* ============ pratinjau berkas dalam popup ============
+           Sengaja ditulis di sini (bukan di partial _pratinjau) karena partial itu di-include
+           DARI layout setelah <head> dirender — @push('gaya') di sana tidak akan tercetak. */
+        .pratinjau-selubung {
+            position: fixed; inset: 0; background: rgba(24, 36, 30, .72); z-index: 200;
+            display: none; align-items: center; justify-content: center; padding: 1rem;
+        }
+        body.pratinjau-terbuka { overflow: hidden; }
+        body.pratinjau-terbuka .pratinjau-selubung { display: flex; }
+        .pratinjau-kotak {
+            background: #fff; border-radius: 16px; max-width: min(96vw, 920px); width: 100%;
+            max-height: 94vh; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 24px 60px -20px rgba(0,0,0,.55);
+        }
+        .pratinjau-kepala {
+            display: flex; align-items: center; gap: .6rem; padding: .6rem .75rem;
+            border-bottom: 1px solid var(--garis); background: #f7fbf8;
+        }
+        .pratinjau-judul { font-size: .84rem; font-weight: 600; color: var(--hijau-tua); margin-right: auto; overflow-wrap: anywhere; }
+        .pratinjau-tombol {
+            font: inherit; font-size: .8rem; font-weight: 600; border: 1px solid var(--garis); background: #fff;
+            color: var(--hijau-tua); border-radius: 9px; padding: .32rem .6rem; cursor: pointer; text-decoration: none;
+            display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; flex: 0 0 auto;
+        }
+        .pratinjau-tombol:hover { background: var(--hijau-muda); }
+        .pratinjau-tombol.tutup { font-size: 1rem; padding: .2rem .55rem; line-height: 1.2; }
+        .pratinjau-isi { padding: .7rem; overflow: auto; text-align: center; background: #eef3f0; }
+        .pratinjau-isi img { max-width: 100%; max-height: 74vh; border-radius: 10px; display: block; margin: 0 auto; background: #fff; }
+        .pratinjau-isi iframe { width: 100%; height: 74vh; border: 0; border-radius: 10px; background: #fff; }
+        .pratinjau-ket { padding: .5rem .8rem .7rem; font-size: .76rem; color: var(--tinta-muda); text-align: center; }
+        @media (max-width: 620px) {
+            .pratinjau-selubung { padding: .5rem; }
+            .pratinjau-isi img { max-height: 66vh; }
+            .pratinjau-isi iframe { height: 66vh; }
+        }
+
         @media (min-width: 1024px) {
             .sisi { transform: translateX(0); box-shadow: none; }
             .sisi-tutup { display: none; }
@@ -418,6 +454,8 @@
     }
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') tutupMenu(); });
 </script>
+@include('panel._pratinjau')
+
 @stack('skrip')
 </body>
 </html>

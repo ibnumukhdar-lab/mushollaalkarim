@@ -63,7 +63,10 @@
                                     @if ($tipeKolom === 'gambar')
                                         @php $tautanGambar = data_get($r, 'gambar_sampul'); @endphp
                                         @if ($tautanGambar)
-                                            <img src="{{ $tautanGambar }}" alt="" class="potong-gambar-mini" loading="lazy">
+                                            <a class="berkas-mini" href="{{ $tautanGambar }}" target="_blank" rel="noopener"
+                                               data-pratinjau="{{ $tautanGambar }}" data-pratinjau-nama="{{ basename(parse_url($tautanGambar, PHP_URL_PATH) ?: 'gambar.jpg') }}" title="Lihat gambar">
+                                                <img src="{{ $tautanGambar }}" alt="" class="potong-gambar-mini" loading="lazy">
+                                            </a>
                                         @else
                                             <span class="potong-gambar-mini" style="display:inline-block;background:var(--hijau-muda)"></span>
                                         @endif
@@ -73,12 +76,21 @@
                                             $pdfBerkas = $isiBerkas && str_ends_with(strtolower((string) $isiBerkas), '.pdf');
                                         @endphp
                                         @if ($isiBerkas)
-                                            <a class="berkas-mini" href="{{ url('/berkas/' . ltrim((string) $isiBerkas, '/')) }}"
-                                               target="_blank" rel="noopener" title="Buka berkas">
+                                            @php
+                                                $tautanBerkas = url('/berkas/' . ltrim((string) $isiBerkas, '/'));
+                                                // nama berkas untuk judul popup & unduhan: pakai keterangan barisnya,
+                                                // sebab nama berkas di server berupa kode acak
+                                                $sebutan = data_get($r, 'keterangan') ?: data_get($r, 'kategori') ?: data_get($r, 'judul') ?: data_get($r, 'nama');
+                                                $ekstensi = pathinfo((string) $isiBerkas, PATHINFO_EXTENSION) ?: 'jpg';
+                                                $namaBerkas = 'bukti-' . (\Illuminate\Support\Str::slug((string) $sebutan) ?: 'kas') . '.' . $ekstensi;
+                                            @endphp
+                                            <a class="berkas-mini" href="{{ $tautanBerkas }}"
+                                               data-pratinjau="{{ $tautanBerkas }}" data-pratinjau-nama="{{ $namaBerkas }}"
+                                               target="_blank" rel="noopener" title="Lihat bukti">
                                                 @if ($pdfBerkas)
                                                     <span class="berkas-pdf">PDF</span>
                                                 @else
-                                                    <img src="{{ url('/berkas/' . ltrim((string) $isiBerkas, '/')) }}" alt="Bukti" loading="lazy">
+                                                    <img src="{{ $tautanBerkas }}" alt="Bukti" loading="lazy">
                                                 @endif
                                             </a>
                                         @else
