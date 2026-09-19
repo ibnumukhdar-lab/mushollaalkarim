@@ -12,6 +12,10 @@
 @endsection
 
 @section('isi')
+    @isset($kasBulanan)
+        @include('panel._kas-bulanan')
+    @endisset
+
     <div class="kartu">
         <div class="kartu-kepala">
             <h3>{{ $def['judul'] }}</h3>

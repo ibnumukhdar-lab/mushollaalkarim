@@ -34,12 +34,22 @@ class PanelController extends Controller
 
         $baris = $q->paginate(15)->withQueryString();
 
-        return view('panel.daftar', [
+        $data = [
             'modul' => $modul,
             'def' => $def,
             'baris' => $baris,
             'cari' => $cari,
-        ]);
+        ];
+
+        // Kas: sertakan rekap bulanan (saldo bersambung + tutup kas)
+        if ($modul === 'kas') {
+            $data['kasBulanan'] = [
+                'baris' => \App\Support\KasBulanan::untukTampilan(),
+                'berjalan' => \App\Support\KasBulanan::bulanBerjalan(),
+            ];
+        }
+
+        return view('panel.daftar', $data);
     }
 
     public function tambah(string $modul)

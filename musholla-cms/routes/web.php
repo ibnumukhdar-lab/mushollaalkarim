@@ -50,6 +50,10 @@ Route::middleware(['auth', 'panel.admin'])->prefix('kelola')->name('panel.')->gr
     Route::post('/infaq/{id}/verifikasi', [\App\Http\Controllers\Panel\InfaqController::class, 'verifikasi'])->name('infaq.verifikasi');
     Route::post('/infaq/{id}/tolak', [\App\Http\Controllers\Panel\InfaqController::class, 'tolak'])->name('infaq.tolak');
 
+    Route::post('/kas/tutup-bulan', [\App\Http\Controllers\Panel\KasBulanController::class, 'tutup'])->name('kas.tutup');
+    Route::post('/kas/hitung-ulang', [\App\Http\Controllers\Panel\KasBulanController::class, 'hitungUlang'])->name('kas.hitungUlang');
+    Route::post('/kas/buka-bulan', [\App\Http\Controllers\Panel\KasBulanController::class, 'buka'])->name('kas.buka');
+
     Route::get('/{modul}', [\App\Http\Controllers\Panel\PanelController::class, 'daftar'])->name('daftar');
     Route::get('/{modul}/tambah', [\App\Http\Controllers\Panel\PanelController::class, 'tambah'])->name('tambah');
     Route::post('/{modul}', [\App\Http\Controllers\Panel\PanelController::class, 'simpan'])->name('simpan');

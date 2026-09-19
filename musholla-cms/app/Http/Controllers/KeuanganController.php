@@ -48,30 +48,17 @@ class KeuanganController extends Controller
         $masukSemua = (float) Kas::where('jenis', 'masuk')->sum('jumlah');
         $keluarSemua = (float) Kas::where('jenis', 'keluar')->sum('jumlah');
 
-        // rekap 12 bulan terakhir
-        $awal = Carbon::now()->startOfMonth()->subMonths(11);
-        $rekap = [];
-        for ($i = 0; $i < 12; $i++) {
-            $kunci = (clone $awal)->addMonths($i)->format('Y-m');
-            $rekap[$kunci] = ['masuk' => 0.0, 'keluar' => 0.0];
-        }
-        $baris = Kas::query()
-            ->where('tanggal', '>=', $awal->toDateString())
-            ->selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan, jenis, SUM(jumlah) as total")
-            ->groupBy('bulan', 'jenis')
-            ->get();
-        foreach ($baris as $b) {
-            if (isset($rekap[$b->bulan][$b->jenis])) {
-                $rekap[$b->bulan][$b->jenis] = (float) $b->total;
-            }
-        }
+        // rekap bulanan dengan saldo bersambung (satu sumber: App\Support\KasBulanan)
+        $rekapBulanan = \App\Support\KasBulanan::untukTampilan();
+        $saldoTerkini = \App\Support\KasBulanan::saldoTerkini();
 
         $daftarBulan = Kas::query()
-            ->selectRaw("DATE_FORMAT(tanggal, '%Y-%m') as bulan")
             ->whereNotNull('tanggal')
-            ->groupBy('bulan')
-            ->orderByDesc('bulan')
-            ->pluck('bulan');
+            ->orderByDesc('tanggal')
+            ->pluck('tanggal')
+            ->map(fn ($t) => \Illuminate\Support\Carbon::parse($t)->format('Y-m'))
+            ->unique()
+            ->values();
 
         $daftarKategori = Kas::query()
             ->whereNotNull('kategori')
@@ -88,7 +75,11 @@ class KeuanganController extends Controller
             'keluarSaring' => $keluarSaring,
             'masukSemua' => $masukSemua,
             'keluarSemua' => $keluarSemua,
-            'rekap' => $rekap,
+            'jumlahMasuk' => Kas::query()->where('jenis', 'masuk')->count(),
+            'jumlahKeluar' => Kas::query()->where('jenis', 'keluar')->count(),
+            'catatanTerakhir' => Kas::query()->max('tanggal'),
+            'saldoTerkini' => $saldoTerkini,
+            'rekapBulanan' => $rekapBulanan,
             'daftarBulan' => $daftarBulan,
             'daftarKategori' => $daftarKategori,
             'bulan' => $bulan,
