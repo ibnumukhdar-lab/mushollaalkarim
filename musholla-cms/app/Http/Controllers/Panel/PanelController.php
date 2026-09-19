@@ -130,6 +130,17 @@ class PanelController extends Controller
      */
     private function siapkanData(Request $request, string $modul, array $def, $rekaman): array
     {
+        // Nominal (tipe uang): terima bentuk apa pun — "69.500", "69500", "Rp 69.500" —
+        // dan simpan angkanya saja. Tanpa ini, titik ribuan bisa dibaca 69,5 (salah) atau
+        // ditolak aturan `numeric`.
+        foreach ($def['field'] as $f) {
+            if (($f['tipe'] ?? '') === 'uang') {
+                $request->merge([
+                    $f['nama'] => preg_replace('/[^0-9]/', '', (string) $request->input($f['nama'], '')),
+                ]);
+            }
+        }
+
         $aturan = [];
         $pesan = [];
         foreach ($def['field'] as $f) {

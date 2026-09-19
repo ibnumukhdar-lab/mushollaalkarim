@@ -59,11 +59,22 @@
                     @if (! empty($f['bantuan'])) <span class="bantuan">{{ $f['bantuan'] }}</span> @endif
                 </div>
             @elseif ($f['tipe'] === 'berkas')
+                @php
+                    $aturanBerkas = implode(',', $f['rules'] ?? []);
+                    $bolehPdf = str_contains($aturanBerkas, 'pdf');
+                    $maksKb = 5120;
+                    if (preg_match('/max:(\d+)/', $aturanBerkas, $cocok)) {
+                        $maksKb = (int) $cocok[1];
+                    }
+                @endphp
                 <div class="{{ trim($lebar) }}">
-                    @include('partials.potong-gambar', [
+                    @include('partials.unggah-gambar', [
                         'nama' => $nama,
                         'label' => $f['label'],
                         'nilai' => $baru ? null : data_get($rekaman, $nama),
+                        'mode' => $f['mode'] ?? 'bebas',
+                        'bolehPdf' => $bolehPdf,
+                        'maksMb' => max(1, (int) round($maksKb / 1024)),
                     ])
                     @if (! empty($f['bantuan'])) <span class="bantuan" style="display:block;margin-top:-.5rem">{{ $f['bantuan'] }}</span> @endif
                 </div>
@@ -129,7 +140,14 @@
                             @break
 
                         @case('uang')
-                            <input type="number" id="f-{{ $nama }}" name="{{ $nama }}" value="{{ $nilaiLama }}" min="0" step="1000" placeholder="0">
+                            {{-- teks (bukan number): nominal apa pun boleh — titik ribuan ditambah otomatis --}}
+                            <input type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
+                                   id="f-{{ $nama }}" name="{{ $nama }}"
+                                   value="{{ ($nilaiLama === null || $nilaiLama === '') ? '' : number_format((float) $nilaiLama, 0, ',', '.') }}"
+                                   data-uang placeholder="mis. 69500">
+                            @if (empty($f['bantuan']))
+                                <span class="bantuan">Boleh nominal berapa saja — contoh 69500 atau 69.500.</span>
+                            @endif
                             @break
 
                         @case('tanggal')
@@ -165,6 +183,9 @@
         </div>
     </form>
 @endsection
+
+{{-- pemformat titik ribuan untuk bidang nominal (uang) --}}
+@include('partials.uang')
 
 @push('skrip')
     <script>

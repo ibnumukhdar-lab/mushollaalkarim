@@ -135,7 +135,9 @@
                             <button type="button" data-nominal="{{ $n }}">Rp {{ number_format($n, 0, ',', '.') }}</button>
                         @endforeach
                     </div>
-                    <input type="number" id="nominal" name="nominal" value="{{ old('nominal') }}" required min="1000" step="1000" placeholder="mis. 50000">
+                    <input type="text" inputmode="numeric" autocomplete="off" id="nominal" name="nominal"
+                           value="{{ old('nominal') }}" required data-uang placeholder="mis. 69500">
+                    <small>Boleh nominal berapa saja (minimal Rp 1.000) — titik ribuan ditambahkan sendiri.</small>
                 </div>
 
                 <div class="baris">
@@ -168,9 +170,11 @@
                 </div>
 
                 <div class="baris">
-                    <label for="bukti">Bukti transfer (foto, tidak wajib)</label>
-                    <input type="file" id="bukti" name="bukti" accept="image/*">
-                    <small>Format gambar, maksimal 2 MB.</small>
+                    @include('partials.unggah-gambar', [
+                        'nama' => 'bukti',
+                        'label' => 'Bukti transfer (tidak wajib)',
+                        'maksMb' => 4,
+                    ])
                 </div>
 
                 <button class="tombol-kirim" type="submit" style="width:100%">Kirim catatan infaq</button>
@@ -183,6 +187,9 @@
 
     <button type="button" class="infaq-melayang" onclick="bukaInfaq()" aria-label="Buka cara berinfaq">Infaq</button>
 @endsection
+
+{{-- pemformat titik ribuan untuk bidang nominal --}}
+@include('partials.uang')
 
 @push('skrip')
     <script>
@@ -241,6 +248,7 @@
                 var isi = document.getElementById('nominal');
                 if (isi) {
                     isi.value = nominal.getAttribute('data-nominal');
+                    isi.dispatchEvent(new Event('input')); // biar titik ribuan ikut tertulis
                     document.querySelectorAll('.nominal-cepat button').forEach(function (b) { b.classList.remove('aktif'); });
                     nominal.classList.add('aktif');
                     isi.focus();

@@ -54,13 +54,18 @@ class DonasiController extends Controller
 
     public function simpan(Request $request)
     {
+        // Terima nominal dalam bentuk apa pun ("69.500" / "69500" / "Rp 69.500") → ambil angkanya.
+        $request->merge([
+            'nominal' => preg_replace('/[^0-9]/', '', (string) $request->input('nominal')),
+        ]);
+
         $data = $request->validate([
             'nama_donatur' => ['required', 'string', 'max:120'],
             'no_wa' => ['required', 'string', 'max:25'],
             'nominal' => ['required', 'numeric', 'min:1000'],
             'tujuan' => ['nullable', 'string', 'max:160'],
             'keterangan' => ['nullable', 'string', 'max:1000'],
-            'bukti' => ['nullable', 'image', 'max:2048'],
+            'bukti' => ['nullable', 'image', 'max:4096'],
         ], [], [
             'nama_donatur' => 'nama',
             'no_wa' => 'nomor WhatsApp',

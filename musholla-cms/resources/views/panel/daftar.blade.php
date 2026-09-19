@@ -63,6 +63,23 @@
                                         @else
                                             <span class="potong-gambar-mini" style="display:inline-block;background:var(--hijau-muda)"></span>
                                         @endif
+                                    @elseif ($tipeKolom === 'berkas')
+                                        @php
+                                            $isiBerkas = data_get($r, $k['nama']);
+                                            $pdfBerkas = $isiBerkas && str_ends_with(strtolower((string) $isiBerkas), '.pdf');
+                                        @endphp
+                                        @if ($isiBerkas)
+                                            <a class="berkas-mini" href="{{ url('/berkas/' . ltrim((string) $isiBerkas, '/')) }}"
+                                               target="_blank" rel="noopener" title="Buka berkas">
+                                                @if ($pdfBerkas)
+                                                    <span class="berkas-pdf">PDF</span>
+                                                @else
+                                                    <img src="{{ url('/berkas/' . ltrim((string) $isiBerkas, '/')) }}" alt="Bukti" loading="lazy">
+                                                @endif
+                                            </a>
+                                        @else
+                                            <span class="berkas-kosong">—</span>
+                                        @endif
                                     @elseif ($kelas !== '')
                                         <span class="lencana {{ $kelas }}">{{ $teks }}</span>
                                     @else

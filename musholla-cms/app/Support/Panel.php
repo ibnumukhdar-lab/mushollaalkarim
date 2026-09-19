@@ -64,9 +64,9 @@ class Panel
                         'bantuan' => 'Kosongkan = simpan sebagai draf (belum tampil di situs).'],
                     ['nama' => 'kategori_ids', 'label' => 'Kategori', 'tipe' => 'pilihan-banyak', 'bagian' => 'Publikasi', 'relasi' => 'kategoriBanyak',
                         'sumber' => Kategori::class, 'rules' => ['nullable', 'array'], 'bantuan' => 'Boleh pilih lebih dari satu — dipakai untuk chip & penyaringan di situs.'],
-                    ['nama' => 'gambar_path', 'label' => 'Gambar sampul (1:1)', 'tipe' => 'berkas', 'bagian' => 'Publikasi', 'lebar' => 'penuh',
+                    ['nama' => 'gambar_path', 'label' => 'Gambar sampul (1:1)', 'tipe' => 'berkas', 'bagian' => 'Publikasi', 'lebar' => 'penuh', 'mode' => 'potong',
                         'rules' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
-                        'bantuan' => 'Pilih gambar lalu atur potongannya (persegi 1:1) sebelum disimpan.'],
+                        'bantuan' => 'Tampil sebagai gambar sampul di kartu berita beranda & arsip.'],
                     ['nama' => 'ringkasan', 'label' => 'Ringkasan (opsional)', 'tipe' => 'teks-panjang', 'bagian' => 'Ringkasan (opsional)', 'rules' => ['nullable', 'max:500'], 'baris' => 3, 'lebar' => 'penuh',
                         'bantuan' => 'Tampil pada kartu berita di beranda. Bila kosong, diambil dari awal isi tulisan.'],
                 ],
@@ -221,6 +221,7 @@ class Panel
                     ['nama' => 'kategori', 'label' => 'Kategori'],
                     ['nama' => 'keterangan', 'label' => 'Keterangan'],
                     ['nama' => 'jumlah', 'label' => 'Jumlah', 'tipe' => 'uang'],
+                    ['nama' => 'bukti_path', 'label' => 'Bukti', 'tipe' => 'berkas'],
                 ],
                 'field' => [
                     ['nama' => 'tanggal', 'label' => 'Tanggal', 'tipe' => 'tanggal', 'wajib' => true, 'rules' => ['required', 'date']],
@@ -247,6 +248,7 @@ class Panel
                     ['nama' => 'nominal', 'label' => 'Nominal', 'tipe' => 'uang'],
                     ['nama' => 'tujuan', 'label' => 'Tujuan'],
                     ['nama' => 'status', 'label' => 'Status', 'tipe' => 'lencana'],
+                    ['nama' => 'bukti_path', 'label' => 'Bukti', 'tipe' => 'berkas'],
                 ],
                 'field' => [
                     ['nama' => 'tanggal', 'label' => 'Tanggal', 'tipe' => 'tanggal', 'wajib' => true, 'rules' => ['required', 'date']],

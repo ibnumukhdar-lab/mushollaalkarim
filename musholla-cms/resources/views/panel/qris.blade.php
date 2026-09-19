@@ -31,10 +31,11 @@
 
         <div class="pemisah"></div>
 
-        @include('partials.potong-gambar', [
+        @include('partials.unggah-gambar', [
             'nama' => 'qris',
-            'label' => 'Gambar QRIS (boleh dipotong dulu)',
+            'label' => 'Gambar QRIS',
             'nilai' => $nilai['qris_path'] ?? null,
+            'mode' => 'potong',
         ])
 
         <div class="bidang lebar-penuh">

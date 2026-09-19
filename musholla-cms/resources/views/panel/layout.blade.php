@@ -254,6 +254,19 @@
         }
         .editor-alat button:hover { background: var(--hijau-muda); }
         .potong-gambar-mini { width: 44px; height: 44px; object-fit: cover; border-radius: 9px; border: 1px solid var(--garis); display: block; }
+        /* kolom berkas: bukti/nota tampil sebagai gambar kecil yang bisa dibuka */
+        .berkas-mini { display: inline-block; line-height: 0; }
+        .berkas-mini img {
+            width: 46px; height: 46px; object-fit: cover; border-radius: 9px;
+            border: 1px solid var(--garis); background: #fff; display: block;
+        }
+        .berkas-mini:hover img { border-color: var(--hijau-lembut); }
+        .berkas-pdf {
+            display: inline-flex; width: 46px; height: 46px; align-items: center; justify-content: center;
+            border-radius: 9px; border: 1px solid var(--garis); background: #f4f7f5;
+            font-size: .66rem; font-weight: 700; letter-spacing: .5px; color: var(--tinta-muda);
+        }
+        .berkas-kosong { color: var(--tinta-muda); }
 
         .halaman { display: flex; justify-content: center; gap: .3rem; margin-top: 1rem; flex-wrap: wrap; }
         .halaman a, .halaman span {
