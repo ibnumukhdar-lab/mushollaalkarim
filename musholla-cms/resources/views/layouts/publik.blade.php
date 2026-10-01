@@ -512,37 +512,54 @@
             opacity: 0; transition: opacity .25s ease; pointer-events: none; max-width: 92vw; text-align: center; }
         .notif-pesan.tampil { opacity: 1; }
 
-        /* ---- tabel rincian kebutuhan program (infaq & wakaf) ---- */
+        /* ---- tabel rincian kebutuhan program (infaq & wakaf) ----
+           Tiga kolom: Kebutuhan | Rincian | Subtotal. Di HP jadi dua kolom
+           (nama kebutuhan + subtotal), keterangan jumlah x harga pindah ke
+           bawah nama supaya tidak ada angka yang menggantung. */
         .rincian-kepala { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; margin: 1.2rem 0 .55rem; }
         .rincian-kepala h2 { margin: 0; }
         .rincian-periode { font-size: .78rem; color: var(--tinta-muda); }
+
         .rincian-tabel { width: 100%; border-collapse: collapse; font-size: .9rem; }
-        .rincian-tabel caption { text-align: left; font-size: .82rem; color: var(--tinta-muda); padding: 0 0 .5rem; }
-        .rincian-tabel th, .rincian-tabel td { padding: .55rem .6rem; border-bottom: 1px solid var(--garis); vertical-align: top; }
+        .rincian-tabel th, .rincian-tabel td { padding: .6rem .7rem; vertical-align: top; text-align: left; }
         .rincian-tabel thead th {
-            font-size: .7rem; letter-spacing: .05em; text-transform: uppercase; color: var(--tinta-muda);
+            font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-muda);
             font-weight: 600; border-bottom: 1px solid var(--hijau-garis); white-space: nowrap;
         }
-        .rincian-tabel tbody th { text-align: left; font-weight: 600; color: var(--tinta); }
-        .rincian-tabel td.kanan, .rincian-tabel th.kanan { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .rincian-tabel tbody tr:nth-child(even) { background: #f8fbf9; }
-        .rincian-tabel tfoot td {
-            border-bottom: 0; border-top: 2px solid var(--hijau-garis);
-            font-weight: 700; color: var(--hijau-tua); font-size: .95rem; padding-top: .6rem;
-        }
-        .rincian-catatan { display: block; font-weight: 400; font-size: .78rem; color: var(--tinta-muda); margin-top: .15rem; }
-        /* di layar sempit: "Jumlah" & "Harga satuan" naik ke bawah nama kebutuhan */
+        .rincian-tabel tbody tr { border-bottom: 1px solid var(--garis); }
+        .rincian-tabel tbody tr:last-child { border-bottom: 0; }
+        .rincian-tabel tbody th { font-weight: 600; color: var(--tinta); width: 52%; }
+        .rincian-nama { display: block; }
+        .rincian-catatan { display: block; font-weight: 400; font-size: .78rem; color: var(--tinta-muda); margin-top: .2rem; }
+        .rincian-rinci { color: var(--tinta-muda); white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .rincian-tabel .kanan { text-align: right; }
+        .rincian-sub { font-weight: 700; color: var(--hijau-tua); white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .rincian-hp { display: none; }
+
+        .rincian-tabel tfoot td { border-top: 2px solid var(--hijau-garis); padding-top: .7rem; }
+        .rincian-total-label { font-weight: 700; color: var(--hijau-tua); }
+        .rincian-total-periode { font-weight: 400; font-size: .78rem; color: var(--tinta-muda); margin-left: .35rem; }
+        .rincian-total-angka { font-weight: 700; font-size: 1.02rem; color: var(--hijau-tua); white-space: nowrap; }
+
+        /* HP: dua kolom — nama kebutuhan (dengan keterangan & catatan di bawahnya) + subtotal */
         @media (max-width: 560px) {
-            .rincian-tabel thead { display: none; }
-            .rincian-tabel tr { display: grid; grid-template-columns: 1fr auto; gap: 0 .6rem; padding: .6rem 0; border-bottom: 1px solid var(--garis); }
-            .rincian-tabel tbody th { grid-column: 1 / -1; }
-            .rincian-tabel td { border: 0; padding: 0; font-size: .84rem; color: var(--tinta-muda); }
-            .rincian-tabel td.kanan:last-child { font-weight: 700; color: var(--hijau-tua); }
-            .rincian-tabel td.kanan:not(:last-child)::after { content: ''; }
-            .rincian-tabel tfoot tr { display: grid; grid-template-columns: 1fr auto; border-bottom: 0; }
-            .rincian-tabel tfoot td { border: 0; padding: .55rem 0 0; }
-            .rincian-tabel tfoot td:first-child { border-top: 2px solid var(--hijau-garis); }
-            .rincian-tabel tfoot td:last-child { border-top: 2px solid var(--hijau-garis); text-align: right; }
+            .rincian-tabel, .rincian-tabel thead, .rincian-tabel tbody, .rincian-tabel tfoot { display: block; }
+            .rincian-tabel thead tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .1rem .7rem; }
+            .rincian-tabel thead th { border-bottom: 1px solid var(--garis); padding: .2rem 0 .45rem; }
+            .rincian-tabel thead th:nth-child(2) { display: none; }   /* kolom Rincian pindah ke bawah nama */
+            .rincian-tabel thead th:nth-child(3) { text-align: right; }
+            .rincian-tabel tbody tr {
+                display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .1rem .7rem;
+                padding: .65rem 0; align-items: start;
+            }
+            .rincian-tabel tbody th { width: auto; padding: .65rem 0; }
+            .rincian-tabel tbody td { padding: .65rem 0; }
+            .rincian-rinci { display: none; }            /* tidak digandakan di HP */
+            .rincian-hp { display: block; font-weight: 400; font-size: .78rem; color: var(--tinta-muda); margin-top: .2rem; }
+            .rincian-sub { grid-column: 2; grid-row: 1; }
+            .rincian-tabel tfoot tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .1rem .7rem; }
+            .rincian-tabel tfoot td { border-top: 2px solid var(--hijau-garis); padding: .7rem 0 0; }
+            .rincian-total-periode { display: block; margin-left: 0; }
         }
     </style>
     @stack('gaya')
