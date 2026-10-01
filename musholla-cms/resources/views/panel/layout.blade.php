@@ -387,6 +387,11 @@
                         @include('panel._ikon', ['nama' => 'gear']) Infaq &amp; QRIS
                     </a>
                 @endif
+                @if ($kunciGrup === 'konten')
+                    <a href="{{ route('panel.rincian.index') }}" @class(['aktif' => request()->routeIs('panel.rincian.*')])>
+                        @include('panel._ikon', ['nama' => 'infaq']) Rincian Program
+                    </a>
+                @endif
             </div>
         @endforeach
 

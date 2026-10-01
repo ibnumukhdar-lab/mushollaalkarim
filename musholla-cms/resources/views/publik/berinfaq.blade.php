@@ -8,6 +8,12 @@
     $pesanWa = rawurlencode("Assalamu'alaikum, saya sudah menyalurkan infaq ke Musholla Al Karim. Berikut bukti transfernya.");
     $targetOperasional = (float) ($pengaturan['operasional_bulanan'] ?? 0);
     $biayaMakan = (float) ($pengaturan['makan_harian'] ?? 0);
+    // Bila program infaq operasional sudah punya RINCIAN kebutuhan, total rincian itulah
+    // yang dipakai — supaya angka di kartu ini sama dengan total tabel di /infaq/<slug>.
+    $tautanOperasional = $programOperasional?->tautan;
+    if ($programOperasional && (float) $programOperasional->total_rincian > 0) {
+        $targetOperasional = (float) $programOperasional->total_rincian;
+    }
     $persenOperasional = $targetOperasional > 0 ? min(100, (int) round($operasionalBulanIni / $targetOperasional * 100)) : 0;
 @endphp
 
@@ -77,6 +83,10 @@
             @endif
             <p style="margin-top:.6rem">
                 <a class="tombol-kecil pemicu-program" href="#formInfaq" data-program="Infaq Operasional">Infaq untuk program ini</a>
+                @if ($tautanOperasional)
+                    <a class="tombol-kecil" style="background:#fff;color:var(--hijau-tua);border:1px solid var(--hijau-garis)"
+                       href="{{ $tautanOperasional }}">Lihat rincian kebutuhan</a>
+                @endif
             </p>
         </div>
 

@@ -24,6 +24,10 @@ Route::get('/berita/{slug}', [PublikController::class, 'beritaSatu'])->name('ber
 // tangkap-semua /{slug} di bawah, kalau tidak akan tertelan.
 Route::get('/wakaf/{slug}', [PublikController::class, 'wakaf'])->name('publik.wakaf');
 
+// Halaman ajakan infaq per program (/infaq/<slug>) — memuat rincian kebutuhan
+// sehingga totalnya bisa dipahami donatur. Juga sebelum /{slug}.
+Route::get('/infaq/{slug}', [PublikController::class, 'infaq'])->name('publik.infaq');
+
 // Pintu penerbitan untuk bot asisten penulis (jangan dihapus).
 Route::post('/api/tulis', [ApiTulisController::class, 'simpan'])->middleware('throttle:20,1');
 
@@ -101,6 +105,11 @@ Route::middleware(['auth', 'panel.admin'])->prefix('kelola')->name('panel.')->gr
     Route::get('/wa/aturan', [\App\Http\Controllers\Panel\WaController::class, 'aturan'])->name('wa.aturan');
     Route::post('/wa/aturan', [\App\Http\Controllers\Panel\WaController::class, 'simpanAturan'])->name('wa.aturan.simpan');
     Route::get('/wa/pratinjau', [\App\Http\Controllers\Panel\WaController::class, 'pratinjau'])->name('wa.pratinjau');
+
+    // Rincian kebutuhan program (wakaf & infaq) — tabel rincian per program
+    Route::get('/program-rincian', [\App\Http\Controllers\Panel\ProgramRincianController::class, 'index'])->name('rincian.index');
+    Route::post('/program-rincian/{program}/baris', [\App\Http\Controllers\Panel\ProgramRincianController::class, 'simpanBaris'])->name('rincian.baris');
+    Route::post('/program-rincian/baris/{baris}/hapus', [\App\Http\Controllers\Panel\ProgramRincianController::class, 'hapusBaris'])->name('rincian.hapus');
 
     Route::get('/{modul}', [\App\Http\Controllers\Panel\PanelController::class, 'daftar'])->name('daftar');
     Route::get('/{modul}/tambah', [\App\Http\Controllers\Panel\PanelController::class, 'tambah'])->name('tambah');

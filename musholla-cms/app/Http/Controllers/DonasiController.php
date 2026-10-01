@@ -37,6 +37,16 @@ class DonasiController extends Controller
             'menu' => $this->menu(),
             'pengaturan' => $this->pengaturan(),
             'wakaf' => WakafProgram::query()->where('aktif', true)->orderBy('urutan')->get(),
+            // Program infaq (mis. Infaq Operasional) — tautan ke halaman rinciannya.
+            // Dicari dari nama/kata kunci kas supaya kartu di bawah tetap satu sumber angka
+            // dengan halaman /infaq/<slug>.
+            'programOperasional' => WakafProgram::query()->where('aktif', true)
+                ->where('jenis', 'infaq')
+                ->where(function ($q) {
+                    $q->where('nama', 'like', '%operasional%')
+                        ->orWhere('kata_kunci_kas', 'operasional');
+                })
+                ->orderBy('urutan')->first(),
             // Daftar kategori tujuan infaq diatur dari panel (Pengaturan → Pilihan tujuan infaq);
             // isi awalnya sama dengan tiga kategori tetap yang dulu dipatok di blade.
             'kategori' => Pengaturan::infaqKategori(),

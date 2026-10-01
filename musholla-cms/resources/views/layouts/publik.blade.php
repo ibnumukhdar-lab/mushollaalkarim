@@ -511,6 +511,39 @@
             color: #fff; font-size: .84rem; padding: .55rem .95rem; border-radius: 999px; z-index: 70;
             opacity: 0; transition: opacity .25s ease; pointer-events: none; max-width: 92vw; text-align: center; }
         .notif-pesan.tampil { opacity: 1; }
+
+        /* ---- tabel rincian kebutuhan program (infaq & wakaf) ---- */
+        .rincian-kepala { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; margin: 1.2rem 0 .55rem; }
+        .rincian-kepala h2 { margin: 0; }
+        .rincian-periode { font-size: .78rem; color: var(--tinta-muda); }
+        .rincian-tabel { width: 100%; border-collapse: collapse; font-size: .9rem; }
+        .rincian-tabel caption { text-align: left; font-size: .82rem; color: var(--tinta-muda); padding: 0 0 .5rem; }
+        .rincian-tabel th, .rincian-tabel td { padding: .55rem .6rem; border-bottom: 1px solid var(--garis); vertical-align: top; }
+        .rincian-tabel thead th {
+            font-size: .7rem; letter-spacing: .05em; text-transform: uppercase; color: var(--tinta-muda);
+            font-weight: 600; border-bottom: 1px solid var(--hijau-garis); white-space: nowrap;
+        }
+        .rincian-tabel tbody th { text-align: left; font-weight: 600; color: var(--tinta); }
+        .rincian-tabel td.kanan, .rincian-tabel th.kanan { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .rincian-tabel tbody tr:nth-child(even) { background: #f8fbf9; }
+        .rincian-tabel tfoot td {
+            border-bottom: 0; border-top: 2px solid var(--hijau-garis);
+            font-weight: 700; color: var(--hijau-tua); font-size: .95rem; padding-top: .6rem;
+        }
+        .rincian-catatan { display: block; font-weight: 400; font-size: .78rem; color: var(--tinta-muda); margin-top: .15rem; }
+        /* di layar sempit: "Jumlah" & "Harga satuan" naik ke bawah nama kebutuhan */
+        @media (max-width: 560px) {
+            .rincian-tabel thead { display: none; }
+            .rincian-tabel tr { display: grid; grid-template-columns: 1fr auto; gap: 0 .6rem; padding: .6rem 0; border-bottom: 1px solid var(--garis); }
+            .rincian-tabel tbody th { grid-column: 1 / -1; }
+            .rincian-tabel td { border: 0; padding: 0; font-size: .84rem; color: var(--tinta-muda); }
+            .rincian-tabel td.kanan:last-child { font-weight: 700; color: var(--hijau-tua); }
+            .rincian-tabel td.kanan:not(:last-child)::after { content: ''; }
+            .rincian-tabel tfoot tr { display: grid; grid-template-columns: 1fr auto; border-bottom: 0; }
+            .rincian-tabel tfoot td { border: 0; padding: .55rem 0 0; }
+            .rincian-tabel tfoot td:first-child { border-top: 2px solid var(--hijau-garis); }
+            .rincian-tabel tfoot td:last-child { border-top: 2px solid var(--hijau-garis); text-align: right; }
+        }
     </style>
     @stack('gaya')
 <script type="application/ld+json">

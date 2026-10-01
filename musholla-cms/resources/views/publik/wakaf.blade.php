@@ -102,6 +102,10 @@
             <div class="wakaf-detail">{!! nl2br(e(strip_tags((string) $program->keterangan))) !!}</div>
         @endif
 
+        {{-- Tabel rincian kebutuhan: tampil bila program ini punya rincian
+             (dipakai juga oleh halaman /infaq/<slug>). --}}
+        @include('publik._rincian', ['program' => $program])
+
         <p class="wakaf-aksi">
             <a class="tombol-kecil" href="{{ url('/mari-berinfaq').'?tujuan='.rawurlencode($namaProgram).'#formInfaq' }}">Infaq untuk program ini</a>
         </p>

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -13,7 +14,10 @@ class WakafProgram extends Model
     protected $fillable = [
         'slug',
         'nama',
+        'jenis',
         'keterangan',
+        'periode_label',
+        'kata_kunci_kas',
         'jumlah',
         'satuan',
         'harga_satuan',
@@ -73,15 +77,86 @@ class WakafProgram extends Model
     }
 
     /**
-     * Alamat halaman pembaca program ini (/wakaf/<slug>).
+     * Alamat halaman pembaca program ini (/wakaf/<slug> atau /infaq/<slug>).
      * Bila slug belum ada (data lama), kembalikan alamat berinfaq supaya
      * tautan di beranda tidak pernah menuju halaman kosong.
      */
     public function getTautanAttribute(): string
     {
-        return filled($this->slug)
-            ? url('/wakaf/' . $this->slug)
-            : url('/mari-berinfaq');
+        if (blank($this->slug)) {
+            return url('/mari-berinfaq');
+        }
+
+        return url('/'.($this->jenis_infaq ? 'infaq' : 'wakaf').'/'.$this->slug);
+    }
+
+    /** Program jenis "infaq" (ajakan dana/operasional) atau "wakaf" (barang). */
+    public function getJenisInfaqAttribute(): bool
+    {
+        return ($this->attributes['jenis'] ?? 'wakaf') === 'infaq';
+    }
+
+    /** Awalan alamat halaman: /infaq untuk program infaq, /wakaf untuk wakaf. */
+    public function getAwalanAlamatAttribute(): string
+    {
+        return $this->jenis_infaq ? 'infaq' : 'wakaf';
+    }
+
+    /** Baris rincian kebutuhan program (urut). */
+    public function rincian(): HasMany
+    {
+        return $this->hasMany(ProgramRincian::class, 'wakaf_program_id')
+            ->orderBy('urutan')->orderBy('id');
+    }
+
+    /** Total rincian kebutuhan (0 bila belum ada rincian). */
+    public function getTotalRincianAttribute(): float
+    {
+        $baris = $this->relationLoaded('rincian') ? $this->rincian : $this->rincian()->get();
+
+        return round((float) $baris->sum(fn ($b) => $b->subtotal), 2);
+    }
+
+    /**
+     * Angka kebutuhan yang dipakai di situs: total rincian bila rincian diisi,
+     * kalau tidak kolom target. Jadi total pada tabel selalu = jumlah barisnya.
+     */
+    public function getKebutuhanAttribute(): float
+    {
+        return $this->total_rincian > 0 ? $this->total_rincian : (float) ($this->attributes['target'] ?? 0);
+    }
+
+    /**
+     * Dana terkumpul yang ditampilkan: bila `kata_kunci_kas` diisi (mis. "operasional"),
+     * dipakai catatan KAS bulan berjalan yang cocok — sama seperti kartu di Mari Berinfaq.
+     * Bila kosong, dipakai kolom terkumpul seperti program wakaf.
+     */
+    public function getProgresAttribute(): float
+    {
+        $kunci = trim((string) ($this->attributes['kata_kunci_kas'] ?? ''));
+
+        if ($kunci === '') {
+            return (float) ($this->attributes['terkumpul'] ?? 0);
+        }
+
+        $awal = \Illuminate\Support\Carbon::now()->startOfMonth();
+
+        return (float) \App\Models\Kas::query()
+            ->where('jenis', 'masuk')
+            ->whereBetween('tanggal', [$awal->toDateString(), \Illuminate\Support\Carbon::now()->toDateString()])
+            ->where(function ($q) use ($kunci) {
+                $q->where('kategori', 'like', '%'.$kunci.'%')
+                    ->orWhere('keterangan', 'like', '%'.$kunci.'%');
+            })
+            ->sum('jumlah');
+    }
+
+    /** Kemajuan pengumpulan terhadap kebutuhan program (0–100). */
+    public function getPersenKebutuhanAttribute(): int
+    {
+        $butuh = $this->kebutuhan;
+
+        return $butuh > 0 ? (int) min(100, round($this->progres / $butuh * 100)) : 0;
     }
 
     /**
