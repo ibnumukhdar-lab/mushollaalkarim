@@ -92,9 +92,9 @@ class BersihkanTampilan
     }
 
     /** Ringkasan bersih untuk meta deskripsi / kartu berita. */
-    public static function ringkas(?string $html, int $batas = 160): string
+    public static function ringkas(?string $html, int $batas = 160, bool $sapuWarisan = true): string
     {
-        $teks = strip_tags(self::bersihkan($html));
+        $teks = strip_tags(self::bersihkan($html, $sapuWarisan));
         $teks = html_entity_decode($teks, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $teks = preg_replace('~\s+~u', ' ', $teks) ?? $teks;
 

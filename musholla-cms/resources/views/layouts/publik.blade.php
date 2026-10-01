@@ -1,7 +1,12 @@
 @php
     $namaSitus = $pengaturan['nama_situs'] ?? 'Musholla Al Karim';
     $slogan = $pengaturan['slogan'] ?? null;
+    // Alamat publik: SATU-SATUNYA sumbernya tabel pengaturan (kunci alamat).
+    $alamatSitus = trim((string) ($pengaturan['alamat'] ?? ''));
     $menuSitus = \App\Support\Menu::utama();
+    // Nomor WhatsApp pengurus: dari pengaturan kunci kontak_wa (dipakai juga
+    // halaman berinfaq). Hanya angka, seperti tautan wa.me di halaman lain.
+    $waPengurus = preg_replace('/\D/', '', (string) ($pengaturan['kontak_wa'] ?? ''));
     $pengguna = auth()->user();
     $namaPengguna = $pengguna ? ($pengguna->nama_lengkap ?: $pengguna->name) : null;
 @endphp
@@ -12,12 +17,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('judul', $namaSitus)</title>
-    <meta name="description" content="@yield('deskripsi', $slogan ?: 'Musholla Al Karim — kajian, kegiatan umat, dan infaq terbuka.')">
+    <meta name="description" content="@yield('deskripsi', ($slogan ? $slogan.' — ' : 'Musholla Al Karim — ').'kajian kitab hadis di Sampit, kajian rutin, pendidikan Al-Qur\'an, dan laporan kas yang terbuka.')">
     <link rel="canonical" href="{{ url()->current() }}">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="author" content="{{ $namaSitus }}">
+    <meta name="keywords" content="Kajian Kitab Hadis Sampit, Kajian Kitab Hadis, Musholla Al Karim, Al Karim Islamic Center, kajian rutin Sampit, pendidikan Al-Qur'an, infaq dan wakaf, laporan kas terbuka">
+
+    {{-- Pratinjau saat dibagikan: WhatsApp, Facebook, X, Telegram --}}
+    <meta property="og:site_name" content="{{ $namaSitus }}">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:type" content="@yield('og_tipe', 'website')">
     <meta property="og:title" content="@yield('judul', $namaSitus)">
-    <meta property="og:type" content="website">
+    <meta property="og:description" content="@yield('deskripsi', ($slogan ? $slogan.' — ' : 'Musholla Al Karim — ').'kajian kitab hadis di Sampit, kajian rutin, pendidikan Al-Qur\'an, dan laporan kas yang terbuka.')">
     <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_gambar', \App\Services\KartuSosial::bawaan())">
+    <meta property="og:image:secure_url" content="@yield('og_gambar', \App\Services\KartuSosial::bawaan())">
+    <meta property="og:image:type" content="@yield('og_tipe_gambar', 'image/png')">
+    <meta property="og:image:width" content="@yield('og_lebar', '1200')">
+    <meta property="og:image:height" content="@yield('og_tinggi', '630')">
+    <meta property="og:image:alt" content="@yield('judul', $namaSitus)">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('judul', $namaSitus)">
+    <meta name="twitter:description" content="@yield('deskripsi', $slogan ?: 'Kajian rutin, pendidikan Al-Qur\'an, dan laporan kas yang terbuka.')">
+    <meta name="twitter:image" content="@yield('og_gambar', \App\Services\KartuSosial::bawaan())">
+    @hasSection('terbit_pada')
+    <meta property="article:published_time" content="@yield('terbit_pada')">
+    @endif
     <meta name="theme-color" content="#3f7d5c">
+    <link rel="icon" href="/favicon-alkarim.ico" sizes="any">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
     <style>
         :root {
             /* Warna khas Musholla Al Karim — hijau soft */
@@ -51,107 +84,147 @@
         .wadah { width: 100%; max-width: 1060px; margin: 0 auto; padding: 0 1.1rem; }
         svg { width: 1.05em; height: 1.05em; flex: none; }
 
-        /* ================= kepala ================= */
+        /* ================= kepala (baris ramping: hamburger + merek + aksi) =================
+           Pola kursus: bilah atas memakai warna gelap merek situs + garis emas tipis
+           di bawah. Di dalamnya HANYA tombol garis tiga (kiri), merek, lonceng
+           notifikasi PWA, dan tombol akun. Nav horizontal lama DIHAPUS. */
         header.situs {
-            background: #fff; border-bottom: 1px solid var(--hijau-garis);
+            background: linear-gradient(180deg, var(--hijau-tua) 0%, #20432f 100%);
+            border-bottom: 1px solid var(--emas);
             position: sticky; top: 0; z-index: 40;
         }
-        .kepala { display: flex; align-items: center; gap: .6rem; min-height: 62px; }
+        .kepala { display: flex; align-items: center; gap: .55rem; min-height: 60px; }
         .tombol-menu {
-            border: 1px solid var(--hijau-garis); background: var(--hijau-muda); color: var(--hijau-tua);
-            width: 38px; height: 38px; border-radius: 11px; cursor: pointer; padding: 0;
+            border: 1px solid rgba(255,255,255,.34); background: rgba(255,255,255,.13); color: #fff;
+            width: 38px; height: 38px; border-radius: 11px; cursor: pointer; padding: 0; flex: none;
             display: inline-flex; align-items: center; justify-content: center;
         }
-        .tombol-menu:hover { background: #e2efe7; }
+        .tombol-menu:hover { background: rgba(255,255,255,.24); }
         .tombol-menu svg { width: 20px; height: 20px; }
-        .merek { display: flex; align-items: center; gap: .55rem; margin-right: auto; color: var(--hijau-tua); }
+        .merek {
+            display: flex; align-items: center; gap: .55rem; margin-right: auto;
+            color: #fff; min-width: 0;
+        }
         .merek:hover { text-decoration: none; }
         .lambang {
             width: 36px; height: 36px; border-radius: 11px; flex: none;
-            background: var(--hijau); color: #fff;
-            display: inline-flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.30);
+            display: inline-flex; align-items: center; justify-content: center; overflow: hidden;
         }
-        .lambang svg { width: 21px; height: 21px; }
+        .lambang img { width: 100%; height: 100%; object-fit: contain; display: block; }
         .merek-teks { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
-        .merek-teks strong { font-size: 1rem; letter-spacing: .1px; color: var(--hijau-tua); white-space: nowrap; }
+        .merek-teks strong {
+            font-size: 1rem; letter-spacing: .1px; color: #fff; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
         .merek-teks span {
-            display: none; font-size: .7rem; color: var(--tinta-muda);
+            display: block; font-size: .68rem; color: var(--emas);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        nav.atas { display: none; align-items: center; gap: .18rem; }
-        nav.atas a {
-            font-size: .88rem; color: var(--tinta); padding: .42rem .7rem; border-radius: 10px;
-            display: inline-flex; align-items: center; gap: .4rem;
-        }
-        nav.atas a:hover { background: var(--hijau-muda); text-decoration: none; }
-        nav.atas a.aktif { background: var(--hijau-muda); color: var(--hijau-tua); font-weight: 600; }
-        nav.atas svg { width: 16px; height: 16px; opacity: .8; }
-        .kepala-aksi { display: flex; align-items: center; gap: .45rem; }
+        .kepala-aksi { display: flex; align-items: center; gap: .35rem; flex: none; }
         .tombol-akun {
             display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
-            border: 1px solid var(--hijau-garis); background: #fff; color: var(--hijau-tua);
-            width: 38px; height: 38px; border-radius: 11px; font-size: .85rem;
+            border: 1px solid rgba(255,255,255,.34); background: rgba(255,255,255,.13); color: #fff;
+            width: 38px; height: 38px; border-radius: 11px; font-size: .85rem; flex: none;
         }
-        .tombol-akun:hover { background: var(--hijau-muda); text-decoration: none; }
-        .tombol-daftar {
-            display: none; align-items: center; gap: .35rem; background: var(--hijau); color: #fff;
-            font-size: .85rem; font-weight: 600; padding: .45rem .9rem; border-radius: 10px;
+        .tombol-akun:hover { background: rgba(255,255,255,.24); text-decoration: none; }
+        /* Layar sempit: perkecil merek & tombol supaya bilah atas tetap SATU baris
+           tanpa gulir mendatar (cacat lama: 320px meluber 28px). */
+        @media (max-width: 430px) {
+            .kepala { gap: .4rem; min-height: 56px; }
+            .merek { gap: .45rem; }
+            .lambang { width: 32px; height: 32px; border-radius: 10px; }
+            .merek-teks strong { font-size: .92rem; }
+            .merek-teks span { font-size: .62rem; }
+            .tombol-menu, .tombol-akun { width: 34px; height: 34px; }
+            .kepala-aksi { gap: .25rem; }
         }
-        .tombol-daftar:hover { background: var(--hijau-tua); text-decoration: none; }
-        @media (min-width: 940px) {
-            .tombol-menu { display: none; }
-            nav.atas { display: flex; }
-            .tombol-daftar { display: inline-flex; }
-            .merek-teks span { display: block; }
+        @media (max-width: 360px) {
+            .merek-teks span { display: none; }
         }
-        /* ================= sidebar (tombol garis tiga) ================= */
-        .selubung {
-            position: fixed; inset: 0; background: rgba(38, 51, 44, .42); backdrop-filter: blur(1.5px);
-            opacity: 0; visibility: hidden; transition: opacity .22s ease; z-index: 60;
+
+        /* ================= laci sidebar (SATU perilaku: desktop & HP) =================
+           Pola sidebar kursus, warna merek Musholla Al Karim:
+           gradasi gelap #2f6046 -> #20432f (hijau tua situs) + aksen emas #c9a961.
+           Tersembunyi TOTAL saat tertutup di SEMUA ukuran layar. */
+        :root { --sb-lebar: 272px; --sb-teks: #e7f1ea; --sb-muda: #9dc0ac; }
+        body.menu-terbuka { overflow: hidden; }
+        .sb-selubung {
+            position: fixed; inset: 0; background: rgba(28, 44, 36, .5); backdrop-filter: blur(1.5px);
+            opacity: 0; visibility: hidden; transition: opacity .22s ease; z-index: 65;
         }
-        .sisi {
-            position: fixed; top: 0; left: 0; bottom: 0; width: 84%; max-width: 320px; z-index: 70;
-            background: #fff; display: flex; flex-direction: column;
-            border-right: 1px solid var(--hijau-garis);
-            transform: translateX(-102%); transition: transform .26s ease;
-            box-shadow: 6px 0 28px rgba(38, 51, 44, .12);
-            overflow-y: auto;
+        body.menu-terbuka .sb-selubung { opacity: 1; visibility: visible; }
+        .sb-sisi {
+            position: fixed; top: 0; left: 0; bottom: 0; width: var(--sb-lebar); max-width: 86vw; z-index: 70;
+            background: linear-gradient(180deg, var(--hijau-tua) 0%, #20432f 100%);
+            color: var(--sb-teks); display: flex; flex-direction: column;
+            border-right: 1px solid rgba(201, 169, 97, .55);
+            transform: translateX(-102%); transition: transform .24s ease;
+            box-shadow: 4px 0 22px rgba(24, 52, 38, .18);
         }
-        body.menu-terbuka .selubung { opacity: 1; visibility: visible; }
-        body.menu-terbuka .sisi { transform: translateX(0); }
-        .sisi-kepala {
-            display: flex; align-items: center; gap: .55rem; padding: .9rem 1rem;
-            border-bottom: 1px solid var(--hijau-garis);
+        body.menu-terbuka .sb-sisi { transform: translateX(0); }
+        /* bilah merek di atas laci */
+        .sb-merek {
+            display: flex; align-items: center; gap: .6rem; flex: none;
+            padding: .9rem .95rem .85rem; border-bottom: 1px solid rgba(255,255,255,.12);
         }
-        .sisi-kepala .merek-teks { margin-right: auto; }
-        .sisi-tutup {
-            border: 1px solid var(--hijau-garis); background: #fff; color: var(--tinta-muda);
-            width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 1.05rem; line-height: 1;
+        .sb-merek .lambang { width: 40px; height: 40px; border-radius: 12px; }
+        .sb-merek .merek-teks { margin-right: auto; }
+        .sb-merek .merek-teks strong { font-size: .95rem; }
+        .sb-merek .merek-teks span { font-size: .68rem; color: var(--sb-muda); letter-spacing: .3px; }
+        .sb-tutup {
+            flex: none; background: rgba(255,255,255,.12); border: 0; color: #fff;
+            width: 32px; height: 32px; border-radius: 10px; cursor: pointer; font-size: 1rem; line-height: 1;
         }
-        .sisi-tutup:hover { background: var(--hijau-muda); }
-        .sisi-menu { padding: .7rem .6rem; display: flex; flex-direction: column; gap: .18rem; }
-        .sisi-menu a {
-            display: flex; align-items: center; gap: .6rem; padding: .62rem .7rem; border-radius: 11px;
-            color: var(--tinta); font-size: .93rem;
+        .sb-tutup:hover { background: rgba(255,255,255,.24); }
+        /* daftar menu */
+        .sb-nav { flex: 1; overflow-y: auto; padding: .6rem .6rem .7rem; }
+        .sb-nav .sb-judul {
+            margin: .2rem .7rem .4rem; font-size: .66rem; letter-spacing: 1px; text-transform: uppercase;
+            color: var(--sb-muda); font-weight: 700;
         }
-        .sisi-menu a:hover { background: var(--hijau-muda); text-decoration: none; }
-        .sisi-menu a.aktif { background: var(--hijau-muda); color: var(--hijau-tua); font-weight: 600; }
-        .sisi-menu a svg { color: var(--hijau); }
-        .sisi-kaki { margin-top: auto; padding: .9rem 1rem 1.4rem; border-top: 1px solid var(--hijau-garis); }
-        .sisi-kaki .nama { font-size: .9rem; font-weight: 600; color: var(--hijau-tua); }
-        .sisi-kaki .surel { font-size: .78rem; color: var(--tinta-muda); margin-bottom: .7rem; word-break: break-all; }
-        .sisi-kaki .tombol-penuh {
-            display: block; text-align: center; font-size: .9rem; font-weight: 600; padding: .6rem 1rem;
-            border-radius: 11px; background: var(--hijau); color: #fff; margin-bottom: .5rem;
+        .sb-nav a {
+            display: flex; align-items: center; gap: .6rem; padding: .5rem .7rem; border-radius: 10px;
+            color: #dcebe2; font-size: .89rem; text-decoration: none; margin-bottom: .1rem;
+            border-left: 3px solid transparent;
         }
-        .sisi-kaki .tombol-penuh:hover { background: var(--hijau-tua); text-decoration: none; }
-        .sisi-kaki .tombol-samar {
-            display: block; text-align: center; font-size: .9rem; font-weight: 600; padding: .55rem 1rem;
-            border-radius: 11px; border: 1px solid var(--hijau-garis); color: var(--hijau-tua); background: #fff;
-            width: 100%; cursor: pointer; font-family: inherit;
+        .sb-nav a:hover { background: rgba(255,255,255,.09); color: #fff; text-decoration: none; }
+        .sb-nav a.sb-aktif {
+            background: rgba(255,255,255,.16); color: #fff; font-weight: 700;
+            border-left-color: var(--emas);
         }
-        .sisi-kaki .tombol-samar:hover { background: var(--hijau-muda); }
-        .sisi-kaki form { margin: 0; }
+        .sb-nav a svg { width: 18px; height: 18px; color: var(--sb-muda); opacity: .95; }
+        .sb-nav a.sb-aktif svg { color: var(--emas); }
+        /* kaki laci: ajakan + alamat + WhatsApp */
+        .sb-kaki {
+            flex: none; border-top: 1px solid rgba(255,255,255,.12);
+            padding: .8rem .85rem .9rem; display: flex; flex-direction: column; gap: .45rem;
+        }
+        .sb-kaki .sb-infaq {
+            display: flex; align-items: center; justify-content: center; gap: .45rem;
+            padding: .68rem .7rem; border-radius: 11px; font-size: .92rem; font-weight: 800;
+            text-decoration: none; color: #243a2c;
+            background: linear-gradient(180deg, #d9c07a, var(--emas));
+            box-shadow: 0 8px 18px -10px rgba(201, 169, 97, .95);
+        }
+        .sb-kaki .sb-infaq:hover { filter: brightness(1.06); text-decoration: none; }
+        .sb-kaki .sb-infaq svg { width: 17px; height: 17px; }
+        .sb-kaki .sb-akun { display: flex; gap: .4rem; }
+        .sb-kaki .sb-akun a, .sb-kaki .sb-akun button {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: .35rem;
+            padding: .48rem .5rem; border-radius: 10px; font-size: .82rem; font-weight: 600;
+            font-family: inherit; text-align: center; text-decoration: none;
+            background: rgba(255,255,255,.12); color: #fff; border: 0; cursor: pointer; width: 100%;
+        }
+        .sb-kaki .sb-akun a:hover, .sb-kaki .sb-akun button:hover { background: rgba(255,255,255,.24); text-decoration: none; }
+        .sb-kaki .sb-kecil { border-top: 1px solid rgba(255,255,255,.12); padding-top: .6rem; }
+        .sb-kaki .sb-alamat { margin: 0; font-size: .73rem; line-height: 1.5; color: var(--sb-muda); overflow-wrap: anywhere; }
+        .sb-kaki .sb-wa {
+            display: inline-flex; align-items: center; gap: .4rem; margin-top: .4rem;
+            font-size: .78rem; font-weight: 600; color: var(--emas); text-decoration: none;
+        }
+        .sb-kaki .sb-wa:hover { color: #e3cf94; text-decoration: none; }
+        .sb-kaki .sb-wa svg { width: 15px; height: 15px; }
 
         /* ================= isi ================= */
         main { padding: 1.5rem 0 3rem; }
@@ -160,7 +233,10 @@
             color: #fff; border-radius: 18px; padding: 1.9rem 1.4rem; margin-bottom: 1.6rem;
         }
         .pahlawan h1 { margin: 0 0 .5rem; font-size: 1.5rem; line-height: 1.3; }
-        .pahlawan p { margin: 0 0 1.1rem; opacity: .94; font-size: .95rem; }
+        .pahlawan p { margin: 0 0 .55rem; opacity: .94; font-size: .95rem; }
+        /* Alamat musholla di kepala beranda: teks kecil dengan jarak POSITIF
+           (dulu memakai margin negatif -.65rem sehingga rapat menabrak slogan). */
+        .pahlawan .alamat-singkat { margin: 0 0 1rem; font-size: .75rem; opacity: .9; }
         .aksi { display: flex; flex-wrap: wrap; gap: .55rem; }
         .tombol {
             display: inline-block; padding: .5rem .95rem; border-radius: 10px; font-size: .87rem;
@@ -397,8 +473,71 @@
         footer.situs .tautan { display: flex; flex-direction: column; gap: .4rem; }
         footer.situs .tautan a { font-size: .88rem; opacity: .95; }
         footer.situs .kecil { opacity: .75; font-size: .78rem; margin-top: 1.6rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.16); }
+        /* Alamat musholla di kaki situs: teks kecil, maksimal dua baris sampai lebar 320px. */
+        footer.situs .kaki-alamat { margin: .45rem 0 0; font-size: .75rem; line-height: 1.5; opacity: .86; }
+    
+        /* --- tombol bagikan ke WhatsApp: ikon kecil, pojok kanan bawah kartu --- */
+        .berita-kartu, .jadwal-kartu, .kartu-bagikan { position: relative; }
+        .berita-kartu .berita-isi { padding-bottom: 2.2rem; }
+        .jadwal-kartu { padding-bottom: 2.7rem; }
+        .bagikan-wa-atas { top: .8rem; right: .8rem; bottom: auto; z-index: 4; }
+        .kartu-bagikan { padding-bottom: 1.1rem; }
+        .bagikan-wa {
+            position: absolute; right: .6rem; bottom: .6rem; z-index: 3;
+            width: 30px; height: 30px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: #25d366; color: #fff; box-shadow: 0 1px 3px rgba(20, 60, 40, .25);
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .bagikan-wa:hover { transform: scale(1.07); box-shadow: 0 2px 7px rgba(20, 60, 40, .32); text-decoration: none; }
+        .bagikan-wa svg { width: 17px; height: 17px; }
+
+        /* gambar program wakaf di halaman pembaca */
+        .wakaf-gambar {
+            display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
+            border-radius: 10px; margin: -.35rem 0 .8rem; background: var(--hijau-muda);
+        }
+        .wakaf-barang { font-size: .84rem; color: var(--hijau-tua); font-weight: 600; margin: .1rem 0 .5rem; }
+        .kartu-wakaf { position: relative; padding-bottom: 3.4rem; }
+        /* lonceng notifikasi PWA */
+        .tombol-lonceng { position: relative; background: 0; border: 0; cursor: pointer; color: var(--hijau-tua);
+            width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center;
+            justify-content: center; transition: background .15s ease; }
+        .tombol-lonceng:hover { background: var(--hijau-muda); }
+        .tombol-lonceng svg { width: 19px; height: 19px; }
+        .tombol-lonceng.nyala::after { content: ''; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px;
+            border-radius: 50%; background: #25d366; border: 2px solid #fff; }
+        .notif-pesan { position: fixed; left: 50%; bottom: 1.1rem; transform: translateX(-50%); background: var(--hijau-tua);
+            color: #fff; font-size: .84rem; padding: .55rem .95rem; border-radius: 999px; z-index: 70;
+            opacity: 0; transition: opacity .25s ease; pointer-events: none; max-width: 92vw; text-align: center; }
+        .notif-pesan.tampil { opacity: 1; }
     </style>
     @stack('gaya')
+<script type="application/ld+json">
+{!! json_encode([
+    '@'.'context' => 'https://schema.org',
+    '@graph' => [
+        [
+            '@type' => 'PlaceOfWorship',
+            '@id' => url('/').'#musholla',
+            'name' => $namaSitus,
+            'alternateName' => 'Al Karim Islamic Center',
+            'url' => url('/'),
+            'hasMap' => 'https://maps.app.goo.gl/NFF6yzNhAWXwJMS68?g_st=ac',
+            'address' => ['@type' => 'PostalAddress', 'streetAddress' => 'Jalan Cilik Riwut KM 5, Perum. Mentaya Permai Blok D - No. 5', 'addressLocality' => 'Baamang, Sampit', 'addressRegion' => 'Kalimantan Tengah', 'addressCountry' => 'ID'],
+            'description' => 'Musholla Al Karim di Sampit, Kalimantan Tengah: kajian kitab hadis dan kajian rutin, pendidikan Al-Qur\'an, infaq dan wakaf, serta laporan kas yang terbuka.',
+            'knowsAbout' => ['Kajian kitab hadis', 'Kajian rutin', 'Pendidikan Al-Qur\'an', 'Infaq dan wakaf'],
+        ],
+        [
+            '@type' => 'WebSite',
+            'url' => url('/'),
+            'name' => $namaSitus,
+            'inLanguage' => 'id-ID',
+            'publisher' => ['@id' => url('/').'#musholla'],
+        ],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+</script>
 </head>
 <body>
 
@@ -411,23 +550,20 @@
         </button>
 
         <a href="/" class="merek">
-            <span class="lambang">@include('publik._ikon', ['nama' => 'masjid'])</span>
+            <span class="lambang"><img src="/icons/emblem-256.png" alt="Lambang Al Karim Islamic Center" width="36" height="36"></span>
             <span class="merek-teks">
                 <strong>{{ $namaSitus }}</strong>
-                @if ($slogan) <span>{{ \Illuminate\Support\Str::limit($slogan, 46) }}</span> @endif
+                @if ($slogan) <span>{{ $slogan }}</span> @endif
             </span>
         </a>
 
-        <nav class="atas" aria-label="Menu utama">
-            @foreach ($menuSitus as $m)
-                <a href="{{ $m['url'] }}" @class(['aktif' => request()->is($m['aktif'])])>
-                    @include('publik._ikon', ['nama' => $m['ikon']])
-                    {{ $m['judul'] }}
-                </a>
-            @endforeach
-        </nav>
-
         <div class="kepala-aksi">
+            <button type="button" class="tombol-lonceng" id="loncengNotif" hidden
+                    title="Nyalakan notifikasi tulisan baru" aria-label="Nyalakan notifikasi tulisan baru">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/>
+                </svg>
+            </button>
             @auth
                 <a href="{{ url('/anggota') }}" class="tombol-akun" title="Akun saya" aria-label="Akun saya">
                     @include('publik._ikon', ['nama' => 'akun'])
@@ -436,46 +572,63 @@
                 <a href="{{ url('/masuk') }}" class="tombol-akun" title="Masuk" aria-label="Masuk">
                     @include('publik._ikon', ['nama' => 'akun'])
                 </a>
-                <a href="{{ url('/daftar') }}" class="tombol-daftar">Daftar</a>
             @endauth
         </div>
     </div>
 </header>
 
-{{-- Sidebar untuk tombol garis tiga (HP & tablet) --}}
-<div class="selubung" id="selubungMenu" onclick="tutupMenu()"></div>
-<aside class="sisi" id="sisiMenu" aria-label="Menu samping" aria-hidden="true">
-    <div class="sisi-kepala">
-        <span class="lambang">@include('publik._ikon', ['nama' => 'masjid'])</span>
+{{-- ============ LACI SIDEBAR ============
+     Satu perilaku untuk desktop & HP: tersembunyi penuh saat tertutup,
+     meluncur dari kiri saat dibuka, ditutup lewat X / klik selubung / Esc. --}}
+<div class="sb-selubung" id="selubungMenu" onclick="tutupMenu()"></div>
+<aside class="sb-sisi" id="sisiMenu" aria-label="Menu situs" aria-hidden="true">
+    <div class="sb-merek">
+        <span class="lambang"><img src="/icons/emblem-256.png" alt="" width="40" height="40"></span>
         <span class="merek-teks">
             <strong>{{ $namaSitus }}</strong>
-            <span>Menu</span>
+            @if ($slogan) <span>{{ $slogan }}</span> @endif
         </span>
-        <button type="button" class="sisi-tutup" aria-label="Tutup menu" onclick="tutupMenu()">✕</button>
+        <button type="button" class="sb-tutup" aria-label="Tutup menu" onclick="tutupMenu()">&#10005;</button>
     </div>
 
-    <nav class="sisi-menu">
+    <nav class="sb-nav" aria-label="Menu utama">
+        <p class="sb-judul">Menu</p>
         @foreach ($menuSitus as $m)
-            <a href="{{ $m['url'] }}" @class(['aktif' => request()->is($m['aktif'])])>
+            <a href="{{ $m['url'] }}" @if (! empty($m['luar'])) target="_blank" rel="noopener" @endif @class(['sb-aktif' => request()->is($m['aktif'])])>
                 @include('publik._ikon', ['nama' => $m['ikon']])
                 {{ $m['judul'] }}
             </a>
         @endforeach
     </nav>
 
-    <div class="sisi-kaki">
-        @auth
-            <div class="nama">{{ $namaPengguna }}</div>
-            <div class="surel">{{ $pengguna->email }}</div>
-            <a href="{{ url('/anggota') }}" class="tombol-penuh">Akun Saya</a>
-            <form method="post" action="{{ url('/keluar') }}">
-                @csrf
-                <button type="submit" class="tombol-samar">Keluar</button>
-            </form>
-        @else
-            <a href="{{ url('/daftar') }}" class="tombol-penuh">Daftar Subscriber</a>
-            <a href="{{ url('/masuk') }}" class="tombol-samar">Masuk</a>
-        @endauth
+    <div class="sb-kaki">
+        <a href="{{ url('/mari-berinfaq') }}" class="sb-infaq">
+            @include('publik._ikon', ['nama' => 'infaq'])
+            Mari Berinfaq
+        </a>
+
+        <div class="sb-akun">
+            @auth
+                <a href="{{ url('/anggota') }}">Akun Saya</a>
+                <form method="post" action="{{ url('/keluar') }}" style="flex:1;margin:0">
+                    @csrf
+                    <button type="submit">Keluar</button>
+                </form>
+            @else
+                <a href="{{ url('/masuk') }}">Masuk</a>
+                <a href="{{ url('/daftar') }}">Daftar</a>
+            @endauth
+        </div>
+
+        <div class="sb-kecil">
+            @if ($alamatSitus) <p class="sb-alamat">{{ $alamatSitus }}</p> @endif
+            @if ($waPengurus)
+                <a class="sb-wa" href="https://wa.me/{{ $waPengurus }}" target="_blank" rel="noopener">
+                    @include('publik._ikon', ['nama' => 'wa'])
+                    WhatsApp pengurus
+                </a>
+            @endif
+        </div>
     </div>
 </aside>
 
@@ -491,12 +644,16 @@
             <div>
                 <h4>{{ $namaSitus }}</h4>
                 @if ($slogan) <p style="margin:0;opacity:.9">{{ $slogan }}</p> @endif
+                @if ($alamatSitus) <p class="kaki-alamat">{{ $alamatSitus }}</p> @endif
+                <div class="tautan" style="margin-top:.5rem">
+                    <a href="https://maps.app.goo.gl/NFF6yzNhAWXwJMS68?g_st=ac" target="_blank" rel="noopener">Lokasi Musholla</a>
+                </div>
             </div>
             <div>
                 <h4>Menu</h4>
                 <div class="tautan">
                     @foreach ($menuSitus as $m)
-                        <a href="{{ $m['url'] }}">{{ $m['judul'] }}</a>
+                        <a href="{{ $m['url'] }}"@if (! empty($m['luar'])) target="_blank" rel="noopener"@endif>{{ $m['judul'] }}</a>
                     @endforeach
                 </div>
             </div>
@@ -522,23 +679,125 @@
 </footer>
 
 <script>
+    /* Laci sidebar: satu jalur untuk desktop & HP. */
     function bukaMenu() {
         document.body.classList.add('menu-terbuka');
         var t = document.getElementById('tombolMenu');
         var s = document.getElementById('sisiMenu');
-        if (t) t.setAttribute('aria-expanded', 'true');
-        if (s) s.setAttribute('aria-hidden', 'false');
+        if (t) { t.setAttribute('aria-expanded', 'true'); }
+        if (s) { s.setAttribute('aria-hidden', 'false'); }
     }
     function tutupMenu() {
         document.body.classList.remove('menu-terbuka');
         var t = document.getElementById('tombolMenu');
         var s = document.getElementById('sisiMenu');
-        if (t) t.setAttribute('aria-expanded', 'false');
-        if (s) s.setAttribute('aria-hidden', 'true');
+        if (t) { t.setAttribute('aria-expanded', 'false'); }
+        if (s) { s.setAttribute('aria-hidden', 'true'); }
     }
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') tutupMenu(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' || e.key === 'Esc') { tutupMenu(); } });
+    // Setelah menekan tautan di dalam laci, laci menutup sendiri.
+    document.addEventListener('click', function (e) {
+        if (!document.body.classList.contains('menu-terbuka')) { return; }
+        var a = e.target && e.target.closest ? e.target.closest('.sb-sisi a') : null;
+        if (a) { setTimeout(tutupMenu, 60); }
+    });
     // Pintasan: /#menu membuka sidebar langsung (berguna untuk pratinjau & tautan)
     if (window.location.hash === '#menu') { bukaMenu(); }
+</script>
+<div class="notif-pesan" id="notifPesan" role="status" aria-live="polite"></div>
+<script>
+(function () {
+    var tombol = document.getElementById('loncengNotif');
+    if (!tombol) { return; }
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) { return; }
+
+    var kotakPesan = document.getElementById('notifPesan');
+    var token = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+    var daftar = null;
+
+    function pesan(teks) {
+        if (!kotakPesan) { return; }
+        kotakPesan.textContent = teks;
+        kotakPesan.classList.add('tampil');
+        setTimeout(function () { kotakPesan.classList.remove('tampil'); }, 3400);
+    }
+
+    function tandai(aktif) {
+        tombol.hidden = false;
+        tombol.classList.toggle('nyala', !!aktif);
+        tombol.title = aktif ? 'Notifikasi aktif — tekan untuk mematikan' : 'Nyalakan notifikasi tulisan baru';
+        tombol.setAttribute('aria-label', tombol.title);
+    }
+
+    function kunciBiner(teks) {
+        var s = teks.replace(/-/g, '+').replace(/_/g, '/');
+        while (s.length % 4) { s += '='; }
+        var biner = atob(s);
+        var keluar = new Uint8Array(biner.length);
+        for (var i = 0; i < biner.length; i++) { keluar[i] = biner.charCodeAt(i); }
+        return keluar;
+    }
+
+    function kirimKe(alamat, isi) {
+        return fetch(alamat, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+            body: JSON.stringify(isi)
+        });
+    }
+
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+    navigator.serviceWorker.ready.then(function (reg) {
+        daftar = reg;
+        return reg.pushManager.getSubscription();
+    }).then(function (langganan) {
+        tandai(!!langganan);
+    }).catch(function () { tombol.hidden = false; });
+
+    tombol.addEventListener('click', function () {
+        if (!daftar) { pesan('Peramban ini belum mendukung notifikasi.'); return; }
+        tombol.disabled = true;
+
+        daftar.pushManager.getSubscription().then(function (langganan) {
+            if (langganan) {
+                var titik = langganan.endpoint;
+                return langganan.unsubscribe().then(function () {
+                    return kirimKe('/api/push/hapus', { endpoint: titik });
+                }).then(function () {
+                    tandai(false);
+                    pesan('Notifikasi dimatikan.');
+                });
+            }
+
+            if (Notification.permission === 'denied') {
+                pesan('Izin notifikasi diblokir. Buka pengaturan peramban untuk mengizinkan.');
+                return null;
+            }
+
+            return Notification.requestPermission().then(function (izin) {
+                if (izin !== 'granted') {
+                    pesan('Izin notifikasi tidak diberikan.');
+                    return null;
+                }
+
+                return fetch('/api/push/vapid').then(function (r) { return r.json(); }).then(function (data) {
+                    return daftar.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: kunciBiner(data.publicKey) });
+                }).then(function (baru) {
+                    return kirimKe('/api/push/simpan', {
+                        endpoint: baru.endpoint,
+                        keys: baru.toJSON().keys,
+                        device: (navigator.userAgent || '').slice(0, 90)
+                    });
+                }).then(function () {
+                    tandai(true);
+                    pesan('Mantap — notifikasi tulisan baru sudah aktif.');
+                });
+            });
+        }).catch(function () {
+            pesan('Gagal mengaktifkan notifikasi. Coba lagi sebentar.');
+        }).then(function () { tombol.disabled = false; });
+    });
+})();
 </script>
 @stack('skrip')
 </body>

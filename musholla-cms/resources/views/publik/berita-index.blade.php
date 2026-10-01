@@ -56,7 +56,10 @@
                             @endif
                         </span>
                     </a>
-                </article>
+                
+                        @php $tksBagikan = $b->judul."\n".url('/berita/'.$b->slug); @endphp
+                        <a class="bagikan-wa" href="https://wa.me/?text={{ rawurlencode($tksBagikan) }}" target="_blank" rel="noopener" title="Bagikan ke WhatsApp" aria-label="Bagikan ke WhatsApp">@include('publik._ikon', ['nama' => 'wa'])</a>
+</article>
             @endforeach
         </div>
 

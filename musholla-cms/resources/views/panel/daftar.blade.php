@@ -4,6 +4,14 @@
 @section('remah', 'Panel Pengelola › ' . $def['judul'])
 
 @section('aksi')
+    @if ($modul === 'berita')
+        <form method="post" action="{{ route('panel.push.uji') }}" style="margin:0">
+            @csrf
+            <button type="submit" class="tbl tbl-samar" title="Kirim notifikasi contoh ke perangkat yang sudah berlangganan">
+                Kirim notifikasi uji
+            </button>
+        </form>
+    @endif
     @if (empty($def['hanyaLihat']))
         <a class="tbl tbl-utama" href="{{ route('panel.tambah', $modul) }}">
             @include('panel._ikon', ['nama' => 'tambah']) Tambah
@@ -118,6 +126,14 @@
                                                 @csrf
                                                 <button class="ikon-tbl bahaya" type="submit" title="Tolak" aria-label="Tolak">
                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                                                </button>
+                                            </form>
+                                        @endif
+                                        @if ($modul === 'infaq' && $r->status === 'terverifikasi' && blank($r->kas_id))
+                                            <form method="post" action="{{ route('panel.infaq.verifikasi', $r->id) }}" style="margin:0">
+                                                @csrf
+                                                <button class="tbl tbl-samar" type="submit" title="Infaq ini terverifikasi tetapi belum ada barisnya di kas">
+                                                    Catat ke kas
                                                 </button>
                                             </form>
                                         @endif

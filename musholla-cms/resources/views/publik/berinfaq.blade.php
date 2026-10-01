@@ -83,9 +83,17 @@
         {{-- Program wakaf (dikelola pengurus di panel) --}}
         @foreach ($wakaf as $w)
             @php $persenWakaf = $w->target > 0 ? min(100, (int) round(((float) $w->terkumpul / max(1, (float) $w->target)) * 100)) : 0; @endphp
-            <div class="kartu">
+            <div class="kartu kartu-wakaf">
+                @if ($w->gambar_url)
+                    <a class="wakaf-tautan" href="{{ $w->tautan }}">
+                        <img class="wakaf-gambar" src="{{ $w->gambar_url }}" alt="Gambar {{ $w->nama }}" loading="lazy">
+                    </a>
+                @endif
                 <div class="tanggal">Wakaf</div>
-                <h3>{{ $w->nama }}</h3>
+                <h3><a class="wakaf-tautan" href="{{ $w->tautan }}">{{ $w->nama }}</a></h3>
+                @if ($w->ringkas_barang)
+                    <p class="wakaf-barang">{{ $w->ringkas_barang }}@if ($w->jumlah > 1 && $w->target > 0) — total Rp{{ number_format((float) $w->target, 0, ',', '.') }}@endif</p>
+                @endif
                 <p>{{ \Illuminate\Support\Str::limit(strip_tags((string) $w->keterangan), 180) }}</p>
                 @if ($w->target > 0)
                     <div style="height:8px;border-radius:6px;background:var(--hijau-muda);margin:.7rem 0 .4rem;overflow:hidden">
@@ -99,6 +107,14 @@
                 <p style="margin-top:.6rem">
                     <a class="tombol-kecil pemicu-program" href="#formInfaq" data-program="{{ $w->nama }}">Infaq untuk program ini</a>
                 </p>
+
+                    @php
+                        $tksWakaf = '*Wakaf Musholla Al Karim*'."\n".'*'.$w->nama.'*'
+                            .($w->ringkas_barang ? "\n".$w->ringkas_barang : '')
+                            .($w->target > 0 ? "\nTerkumpul Rp ".number_format((float) $w->terkumpul, 0, ',', '.')." dari Rp ".number_format((float) $w->target, 0, ',', '.').' ('.$w->persen.'%)' : '')
+                            ."\n\nMari ikut berwakaf:\n".$w->tautan;
+                    @endphp
+                    <a class="bagikan-wa" href="https://wa.me/?text={{ rawurlencode($tksWakaf) }}" target="_blank" rel="noopener" title="Bagikan {{ $w->nama }} ke WhatsApp" aria-label="Bagikan ke WhatsApp">@include('publik._ikon', ['nama' => 'wa'])</a>
             </div>
         @endforeach
     </div>
@@ -143,11 +159,11 @@
                 <div class="baris">
                     <label for="tujuan">Untuk program</label>
                     <select id="tujuan" name="tujuan">
-                        <option value="Infaq umum">Infaq umum</option>
-                        <option value="Infaq Makan Gratis" @selected(old('tujuan') === 'Infaq Makan Gratis')>Infaq Makan Gratis</option>
-                        <option value="Infaq Operasional" @selected(old('tujuan') === 'Infaq Operasional')>Infaq Operasional</option>
+                        @foreach ($kategori as $pilihan)
+                            <option value="{{ $pilihan }}" @selected(old('tujuan') === $pilihan || request('tujuan') === $pilihan)>{{ $pilihan }}</option>
+                        @endforeach
                         @foreach ($wakaf as $w)
-                            <option value="{{ $w->nama }}" @selected(old('tujuan') === $w->nama)>{{ $w->nama }}</option>
+                            <option value="{{ $w->nama }}" @selected(old('tujuan') === $w->nama || request('tujuan') === $w->nama)>{{ $w->nama }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -266,6 +282,12 @@
         // bila pengiriman gagal (ada galat) atau ada isian lama, popup langsung terbuka
         @if ($errors->any() || old('nama_donatur'))
             document.addEventListener('DOMContentLoaded', function () { bukaInfaq(); });
+        @endif
+
+        // datang dari halaman program wakaf (/wakaf/<slug>?tujuan=<nama>) →
+        // program itu langsung terpilih & formulirnya terbuka
+        @if (filled(request('tujuan')))
+            document.addEventListener('DOMContentLoaded', function () { bukaInfaq(@json(request('tujuan'))); });
         @endif
     </script>
 @endpush

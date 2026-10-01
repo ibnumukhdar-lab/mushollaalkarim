@@ -16,6 +16,7 @@ class Kas extends Model
         'keterangan',
         'bukti_path',
         'dicatat_oleh',
+        'infaq_id',
     ];
 
     protected $casts = [
@@ -26,5 +27,11 @@ class Kas extends Model
     public function pencatat()
     {
         return $this->belongsTo(User::class, 'dicatat_oleh');
+    }
+
+    /** Infaq asal baris kas ini (bila dicatat dari verifikasi infaq). */
+    public function infaq()
+    {
+        return $this->belongsTo(Infaq::class, 'infaq_id');
     }
 }

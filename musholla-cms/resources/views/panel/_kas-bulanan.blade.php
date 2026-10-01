@@ -72,6 +72,17 @@
                 </details>
             </form>
         @endunless
+
+        @php
+            // bulan terakhir yang sudah ditutup & ada isinya → siap dilaporkan ke donatur
+            $laporanSiap = collect($riwayat)->first(fn ($b) => $b['ditutup'] && ($b['masuk'] > 0 || $b['keluar'] > 0));
+        @endphp
+        @if ($laporanSiap)
+            <a class="tbl tbl-samar" style="text-decoration:none"
+               href="{{ route('panel.wa.pusat', ['laporan' => 1, 'periode' => $laporanSiap['periode'], 'grup' => 'donatur']) }}">
+                @include('panel._ikon', ['nama' => 'wa']) Kirim laporan {{ $laporanSiap['label_pendek'] }} ke donatur
+            </a>
+        @endif
     </div>
 
     <p style="margin:-.35rem 0 .9rem;font-size:.84rem;color:var(--tinta-muda)">
@@ -140,6 +151,15 @@
                     </td>
                     <td data-label="Tindakan">
                         <div class="aksi-baris">
+                            @if ($b['masuk'] > 0 || $b['keluar'] > 0)
+                                <a class="ikon-tbl" style="text-decoration:none"
+                                   href="{{ route('panel.wa.pusat', ['laporan' => 1, 'periode' => $b['periode'], 'grup' => 'donatur']) }}"
+                                   title="Kirim laporan kas {{ $b['label'] }} ke donatur lewat WhatsApp"
+                                   aria-label="Kirim laporan kas {{ $b['label'] }} lewat WhatsApp">
+                                    @include('panel._ikon', ['nama' => 'wa'])
+                                </a>
+                            @endif
+
                             @if (! $b['ditutup'] && ($b['masuk'] > 0 || $b['keluar'] > 0))
                                 <form method="post" action="{{ route('panel.kas.tutup') }}" style="margin:0"
                                       onsubmit="return confirm('Tutup kas {{ $b['label'] }} sekarang?')">

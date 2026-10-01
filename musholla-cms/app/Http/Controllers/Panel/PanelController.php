@@ -77,7 +77,9 @@ class PanelController extends Controller
 
         $this->simpanRelasi($rekaman, $siap['relasi']);
 
-        return redirect()->route('panel.daftar', $modul)->with('sukses', $def['judulSatu'] . ' baru tersimpan.');
+        $tambahan = $this->siarkanBilaDiminta($request, $modul, $rekaman);
+
+        return redirect()->route('panel.daftar', $modul)->with('sukses', $def['judulSatu'] . ' baru tersimpan.' . $tambahan);
     }
 
     public function ubah(string $modul, int $id)
@@ -103,7 +105,9 @@ class PanelController extends Controller
 
         $this->simpanRelasi($rekaman, $siap['relasi']);
 
-        return redirect()->route('panel.daftar', $modul)->with('sukses', $def['judulSatu'] . ' berhasil diperbarui.');
+        $tambahan = $this->siarkanBilaDiminta($request, $modul, $rekaman);
+
+        return redirect()->route('panel.daftar', $modul)->with('sukses', $def['judulSatu'] . ' berhasil diperbarui.' . $tambahan);
     }
 
     /** Sinkronkan pilihan banyak (mis. kategori berita). */
@@ -140,6 +144,20 @@ class PanelController extends Controller
      */
     private function siapkanData(Request $request, string $modul, array $def, $rekaman): array
     {
+        // Isi dari editor kaya dikirim sebagai base64 (WAF hosting ini menolak
+        // tag HTML di POST multipart, sedangkan unggah gambar memaksa multipart).
+        // Diurai di sini, disaring tag aman, lalu diberi penanda supaya saat
+        // ditampilkan tidak disapu sebagai isi warisan WordPress.
+        foreach ($request->all() as $kunci => $nilai) {
+            if (! is_string($nilai) || ! str_starts_with($nilai, 'b64:')) {
+                continue;
+            }
+            $urai = base64_decode(substr($nilai, 4), true);
+            $request->merge([
+                $kunci => \App\Support\HtmlAman::PENANDA . \App\Support\HtmlAman::bersihkan($urai === false ? '' : $urai),
+            ]);
+        }
+
         // Nominal (tipe uang): terima bentuk apa pun — "69.500", "69500", "Rp 69.500" —
         // dan simpan angkanya saja. Tanpa ini, titik ribuan bisa dibaca 69,5 (salah) atau
         // ditolak aturan `numeric`.
@@ -154,6 +172,9 @@ class PanelController extends Controller
         $aturan = [];
         $pesan = [];
         foreach ($def['field'] as $f) {
+            if (! empty($f['tanpa_simpan'])) {
+                continue;   // kolom bantu (mis. centang kirim WA) — bukan kolom basis data
+            }
             if ($f['tipe'] === 'berkas' || $f['tipe'] === 'sandi') {
                 $aturan[$f['nama']] = $f['rules'] ?? ['nullable'];
                 continue;
@@ -166,8 +187,8 @@ class PanelController extends Controller
             $aturan['email'][] = 'unique:users,email' . ($rekaman ? ',' . $rekaman->id : '');
             $pesan['email.unique'] = 'Email ini sudah dipakai akun lain.';
         }
-        // slug halaman/berita unik bila diisi
-        if (in_array($modul, ['pages', 'berita'], true)) {
+        // slug halaman/berita/program wakaf unik bila diisi
+        if (in_array($modul, ['pages', 'berita', 'wakaf_program'], true)) {
             $tabel = $modul;
             $aturan['slug'][] = 'unique:' . $tabel . ',slug' . ($rekaman ? ',' . $rekaman->id : '');
             $pesan['slug.unique'] = 'Slug ini sudah dipakai. Pakai kata lain.';
@@ -180,6 +201,10 @@ class PanelController extends Controller
         foreach ($def['field'] as $f) {
             $nama = $f['nama'];
             $tipe = $f['tipe'];
+
+            if (! empty($f['tanpa_simpan'])) {
+                continue;   // hanya untuk tampilan/aksi, bukan data
+            }
 
             if ($tipe === 'sandi') {
                 $isi = (string) $request->input($nama, '');
@@ -265,5 +290,28 @@ class PanelController extends Controller
         }
 
         return $calon;
+    }
+
+    /**
+     * Bila pengurus mencentang "Kirim update ke kontak WhatsApp" pada formulir
+     * tulisan, pesan disiapkan di sini (masuk antrean atau langsung terkirim
+     * bila WA Auto aktif). Balikannya kalimat tambahan untuk pesan sukses.
+     */
+    private function siarkanBilaDiminta(Request $request, string $modul, $rekaman): string
+    {
+        if ($modul !== 'berita' || ! $request->boolean('kirim_wa')) {
+            return '';
+        }
+
+        try {
+            $grup = (array) $request->input('wa_grup', ['donatur']);
+            $hasil = \App\Services\WhatsApp::siarkanBerita($rekaman, $grup);
+
+            return ' ' . $hasil['ringkas'];
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Gagal menyiarkan tulisan ke WA: ' . $e->getMessage());
+
+            return ' (Catatan: penyiaran ke WhatsApp gagal disiapkan — periksa Pusat WhatsApp.)';
+        }
     }
 }

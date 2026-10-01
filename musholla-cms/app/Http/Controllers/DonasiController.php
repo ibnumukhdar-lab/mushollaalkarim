@@ -37,6 +37,9 @@ class DonasiController extends Controller
             'menu' => $this->menu(),
             'pengaturan' => $this->pengaturan(),
             'wakaf' => WakafProgram::query()->where('aktif', true)->orderBy('urutan')->get(),
+            // Daftar kategori tujuan infaq diatur dari panel (Pengaturan → Pilihan tujuan infaq);
+            // isi awalnya sama dengan tiga kategori tetap yang dulu dipatok di blade.
+            'kategori' => Pengaturan::infaqKategori(),
             // Program bawaan musholla (selain program wakaf yang dikelola di panel)
             'makanGratis' => (float) Infaq::query()->where('status', 'terverifikasi')
                 ->where('tujuan', 'like', '%makan%')->sum('nominal'),

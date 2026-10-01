@@ -49,6 +49,18 @@ class Menu
             ])
             ->all();
 
-        return array_merge($inti, $tambahan);
+        // Tautan ke LUAR situs (bukan halaman aplikasi): selalu PALING AKHIR,
+        // ditandai 'luar' => true supaya tata letak membukanya di tab baru.
+        $luar = [
+            [
+                'judul' => 'Lokasi Musholla',
+                'url' => 'https://maps.app.goo.gl/NFF6yzNhAWXwJMS68?g_st=ac',
+                'aktif' => 'luar-lokasi-musholla',
+                'ikon' => 'masjid',
+                'luar' => true,
+            ],
+        ];
+
+        return array_merge($inti, $tambahan, $luar);
     }
 }

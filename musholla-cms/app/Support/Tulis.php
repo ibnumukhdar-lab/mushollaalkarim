@@ -14,6 +14,11 @@ use App\Services\BersihkanTampilan;
  *
  * Konten warisan WordPress yang sudah berisi HTML tetap diteruskan apa adanya
  * (dibersihkan oleh BersihkanTampilan).
+ *
+ * Sejak panel memakai editor kaya (TinyMCE), isi yang ditulis pengurus dikirim
+ * sebagai base64 lalu disimpan sebagai HTML dengan penanda App\Support\HtmlAman
+ * di depannya. Isi berpenanda itu diteruskan apa adanya — hanya disaring tag
+ * aman — sehingga gaya huruf, daftar, tautan, dan tabel tetap utuh.
  */
 class Tulis
 {
@@ -25,9 +30,24 @@ class Tulis
             return '';
         }
 
-        // Konten lama yang sudah HTML (warisan WP) → teruskan, tetap dibersihkan.
+        // Isi dari editor kaya di panel → pakai apa adanya (hanya disaring tag
+        // aman). Jangan disapu sebagai isi warisan, penyapu itu memakan tag
+        // berdampingan dan membuang tautan berkutip.
+        if (HtmlAman::berkodeKaya($teks)) {
+            return HtmlAman::isi($teks);
+        }
+
+        // Isi yang sudah berisi HTML:
         if (str_contains($teks, '<')) {
-            return BersihkanTampilan::bersihkan($teks);
+            // a. Warisan WordPress (tag/atribut desain lama) → sapu penuh seperti dulu.
+            if (HtmlAman::warisan($teks)) {
+                return BersihkanTampilan::bersihkan($teks);
+            }
+
+            // b. HTML yang sudah bersih (tulisan baru, hasil impor rapi) → JANGAN disapu:
+            //    penyapu memakan tag berdampingan (</p>\n<h2> → </p h2>) dan membuang
+            //    tautan berkutip. Cukup buang shortcode/skrip lalu saring tag aman.
+            return HtmlAman::bersihkan(BersihkanTampilan::bersihkan($teks, false));
         }
 
         $keluar = [];
@@ -114,6 +134,17 @@ class Tulis
     /** Ringkasan tanpa penanda, untuk kartu & meta deskripsi. */
     public static function ringkas(?string $teks, int $batas = 150): string
     {
+        // Isi editor kaya: buang tagnya saja, tanpa penyapu warisan.
+        if (HtmlAman::berkodeKaya($teks)) {
+            $html = HtmlAman::isi($teks);
+            $html = preg_replace('~<(br|hr)\s*/?>~i', ' ', $html) ?? $html;
+            $html = preg_replace('~</(p|h[1-6]|li|blockquote|div|tr|td|figure)\s*>~i', ' ', $html) ?? $html;
+            $teks = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $teks = preg_replace('~\s+~u', ' ', (string) $teks) ?? $teks;
+
+            return \Illuminate\Support\Str::limit(trim((string) $teks), $batas);
+        }
+
         $teks = preg_replace('/\[([^\]]+)\]\([^\)]+\)/', '$1', (string) $teks);
         $teks = preg_replace('/^#{2,4}\s+/m', '', $teks);
         $teks = preg_replace('/^[-*>]\s+/m', '', $teks);

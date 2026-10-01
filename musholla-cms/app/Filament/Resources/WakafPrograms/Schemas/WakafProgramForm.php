@@ -15,6 +15,12 @@ class WakafProgramForm
             ->components([
                 TextInput::make('nama')
                     ->required(),
+                TextInput::make('slug')
+                    ->label('Alamat halaman (slug)')
+                    ->maxLength(120)
+                    ->unique(ignoreRecord: true)
+                    ->default(null)
+                    ->helperText('Alamat /wakaf/<slug> saat dibagikan. Kosongkan agar dibuat otomatis dari nama program.'),
                 Textarea::make('keterangan')
                     ->default(null)
                     ->columnSpanFull(),

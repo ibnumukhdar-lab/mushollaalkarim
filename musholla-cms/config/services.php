@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'tulis' => [
+        'token' => env('TULIS_TOKEN'),
+    ],
+
+
+    // Notifikasi web (PWA) — kunci VAPID disimpan di .env.
+    'push' => [
+        'vapid_public' => env('VAPID_PUBLIC_KEY'),
+        'vapid_private' => env('VAPID_PRIVATE_KEY'),
+        'subject' => env('VAPID_SUBJECT', 'mailto:admin@mushollaalkarim.web.id'),
+    ],
 ];

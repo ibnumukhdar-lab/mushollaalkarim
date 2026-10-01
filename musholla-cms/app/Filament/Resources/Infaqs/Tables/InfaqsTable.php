@@ -51,6 +51,11 @@ class InfaqsTable
                         'ditolak' => 'danger',
                         default => 'warning',
                     }),
+                TextColumn::make('kas_id')
+                    ->label('Kas')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state ? 'kas #'.$state : 'belum tercatat')
+                    ->color(fn ($state) => $state ? 'success' : 'gray'),
                 TextColumn::make('tujuan')
                     ->label('Untuk')
                     ->placeholder('—')
@@ -89,17 +94,36 @@ class InfaqsTable
                             ->success()
                             ->send();
                     }),
+                Action::make('catatKeKas')
+                    ->label('Catat ke kas')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('warning')
+                    ->visible(fn (Infaq $r) => $r->status === 'terverifikasi' && blank($r->kas_id))
+                    ->requiresConfirmation()
+                    ->modalHeading('Catat infaq ini ke kas sekarang?')
+                    ->modalDescription('Catatan terverifikasi yang belum punya baris kas — aman ditekan, idempoten.')
+                    ->action(function (Infaq $r) {
+                        $kas = $r->verifikasi(auth()->id());
+                        Notification::make()
+                            ->title($kas ? 'Tercatat ke kas (kas #'.$kas->id.')' : 'Sudah tercatat sebelumnya')
+                            ->success()
+                            ->send();
+                    }),
                 Action::make('tolak')
                     ->label('Tolak')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (Infaq $r) => $r->status === 'menunggu')
+                    ->visible(fn (Infaq $r) => $r->status !== 'ditolak')
                     ->requiresConfirmation()
+                    ->modalHeading('Tolak infaq ini?')
+                    ->modalDescription('Bila infaq ini sudah tercatat di kas, baris kasnya ikut dihapus.')
                     ->action(function (Infaq $r) {
-                        $r->status = 'ditolak';
-                        $r->diverifikasi_oleh = auth()->id();
-                        $r->save();
-                        Notification::make()->title('Infaq ditolak')->warning()->send();
+                        // Satukan perilaku dengan tombol panel: Infaq::tolak().
+                        $hasil = $r->tolak(auth()->id());
+                        Notification::make()
+                            ->title($hasil['pesan'])
+                            ->{$hasil['berhasil'] ? 'success' : 'danger'}()
+                            ->send();
                     }),
                 EditAction::make(),
                 DeleteAction::make(),

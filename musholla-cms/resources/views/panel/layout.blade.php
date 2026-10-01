@@ -224,6 +224,9 @@
         .bidang.saklar { display: flex; align-items: center; gap: .55rem; }
         .bidang.saklar > label { margin: 0; font-weight: 500; font-size: .88rem; }
         .bidang.saklar input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--hijau); }
+        /* di layar sempit, keterangan saklar pindah ke baris sendiri agar label tidak terdesak */
+        .bidang.saklar { flex-wrap: wrap; }
+        .bidang.saklar .bantuan { flex: 1 0 100%; margin-top: .3rem; }
         .jaring-2 { display: grid; gap: 0 .9rem; }
         @media (min-width: 760px) { .jaring-2 { grid-template-columns: 1fr 1fr; } }
         .lebar-penuh { grid-column: 1 / -1; }
@@ -302,7 +305,7 @@
 
         /* ============ pratinjau berkas dalam popup ============
            Sengaja ditulis di sini (bukan di partial _pratinjau) karena partial itu di-include
-           DARI layout setelah <head> dirender — @push('gaya') di sana tidak akan tercetak. */
+           DARI layout setelah <head> dirender — @ push('gaya') di sana tidak akan tercetak. */
         .pratinjau-selubung {
             position: fixed; inset: 0; background: rgba(24, 36, 30, .72); z-index: 200;
             display: none; align-items: center; justify-content: center; padding: 1rem;
@@ -375,7 +378,12 @@
                     </a>
                 @endforeach
                 @if ($kunciGrup === 'keuangan')
-                    <a href="{{ route('panel.qris') }}" @class(['aktif' => request()->routeIs('panel.qris')])>
+                    <a href="{{ route('panel.wa.pusat') }}" @class(['aktif' => request()->routeIs('panel.wa.*')])>
+                @include('panel._ikon', ['nama' => 'wa']) Pusat WhatsApp
+                @php $waTunggu = \App\Services\WhatsApp::ringkasan()['menunggu'] ?? 0; @endphp
+                @if ($waTunggu) <span class="lencana lencana-kuning">{{ $waTunggu }}</span> @endif
+            </a>
+            <a href="{{ route('panel.qris') }}" @class(['aktif' => request()->routeIs('panel.qris')])>
                         @include('panel._ikon', ['nama' => 'gear']) Infaq &amp; QRIS
                     </a>
                 @endif
@@ -427,6 +435,9 @@
         <div class="wadah-panel">
             @if (session('sukses'))
                 <div class="pesan-sukses">{{ session('sukses') }}</div>
+            @endif
+            @if (session('galat'))
+                <div class="pesan-galat">{{ session('galat') }}</div>
             @endif
             @if ($errors->any())
                 <div class="pesan-galat">

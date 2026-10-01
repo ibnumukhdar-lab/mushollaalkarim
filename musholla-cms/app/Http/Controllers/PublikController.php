@@ -56,6 +56,25 @@ class PublikController extends Controller
         ]);
     }
 
+    /**
+     * Halaman sendiri untuk satu program wakaf: /wakaf/<slug>.
+     * Program tidak ditemukan ATAU tidak aktif → 404 situs (firstOrFail),
+     * sama seperti halaman statis yang tidak ada — bukan halaman galat.
+     */
+    public function wakaf(string $slug)
+    {
+        $program = WakafProgram::query()
+            ->where('slug', $slug)
+            ->where('aktif', true)
+            ->firstOrFail();
+
+        return view('publik.wakaf', [
+            'program' => $program,
+            'menu' => $this->menu(),
+            'pengaturan' => $this->pengaturan(),
+        ]);
+    }
+
     public function halaman(string $slug)
     {
         $hal = Page::query()->where('slug', $slug)->whereNotNull('terbit_at')->firstOrFail();

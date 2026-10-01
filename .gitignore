@@ -19,6 +19,12 @@
 # WordPress (arsip — hanya kode yang penting)
 _arsip-wordpress/nama-acak/
 
+# Pustaka pihak ketiga di public (tidak perlu masuk repo)
+/public/vendor/
+
+# Berkas bantu uji lokal
+/storage/uji-*.php
+
 # cadangan & berkas besar
 *.zip
 *.sql

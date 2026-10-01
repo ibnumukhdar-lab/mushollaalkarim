@@ -19,16 +19,17 @@ class PengaturanController extends Controller
         'kontak_wa' => ['label' => 'Nomor WhatsApp pengurus', 'bantuan' => 'Format 628xxxxxxxxxx — dipakai tombol hubungi & konfirmasi infaq.'],
         'alamat' => ['label' => 'Alamat musholla', 'bantuan' => 'Alamat lengkap untuk ditampilkan di situs.'],
         'jam_operasional' => ['label' => 'Jam kegiatan', 'bantuan' => 'mis. Setiap hari 04.30–21.00 WIB.'],
-        'operasional_bulanan' => ['label' => 'Kebutuhan operasional per bulan (Rp)', 'bantuan' => 'Dipakai halaman Mari Berinfaq untuk menampilkan kebutuhan biaya bulanan.'],
-        'makan_harian' => ['label' => 'Biaya Makan Gratis per hari (Rp)', 'bantuan' => 'Dipakai halaman Mari Berinfaq sebagai keterangan program makan gratis.'],
     ];
+
+    /** Kunci yang punya medan sendiri (bukan textarea "isian tambahan"). */
+    private const KUNCI_TERSENDIRI = [Pengaturan::KUNCI_KATEGORI_INFAQ];
 
     public function index()
     {
         $tersimpan = Pengaturan::query()->pluck('nilai', 'kunci')->all();
 
         $tambahan = Pengaturan::query()
-            ->whereNotIn('kunci', array_keys(self::BAKU))
+            ->whereNotIn('kunci', array_merge(array_keys(self::BAKU), self::KUNCI_TERSENDIRI))
             ->orderBy('kunci')
             ->pluck('nilai', 'kunci')
             ->all();
@@ -38,6 +39,8 @@ class PengaturanController extends Controller
             'baku' => self::BAKU,
             'tersimpan' => $tersimpan,
             'tambahan' => $tambahan,
+            // daftar kategori ditampilkan satu per baris (textarea ringkas)
+            'kategoriInfaq' => implode("\n", Pengaturan::infaqKategori()),
         ]);
     }
 
@@ -50,7 +53,15 @@ class PengaturanController extends Controller
             'baru_nilai' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        foreach (($data['isi'] ?? []) as $kunci => $nilai) {
+        $isi = $data['isi'] ?? [];
+
+        // Daftar kategori tujuan infaq disimpan sebagai JSON (satu baris = satu kategori).
+        if (array_key_exists(Pengaturan::KUNCI_KATEGORI_INFAQ, $isi)) {
+            Pengaturan::simpanInfaqKategori((string) $isi[Pengaturan::KUNCI_KATEGORI_INFAQ]);
+            unset($isi[Pengaturan::KUNCI_KATEGORI_INFAQ]);
+        }
+
+        foreach ($isi as $kunci => $nilai) {
             Pengaturan::updateOrCreate(['kunci' => $kunci], ['nilai' => $nilai]);
         }
 

@@ -21,7 +21,8 @@ use App\Models\WakafProgram;
  * Satu tempat untuk: kelompok menu, judul, ikon, kolom daftar, dan bidang formulir.
  * PanelController membaca definisi ini untuk daftar/tambah/ubah/hapus.
  *
- * Tipe bidang yang didukung: teks, teks-panjang, angka, uang, tanggal, tanggal-waktu,
+ * Tipe bidang yang didukung: teks, teks-panjang (+ 'kaya' => true untuk editor
+ * TinyMCE lengkap), angka, uang, tanggal, tanggal-waktu,
  * waktu, pilihan, saklar, berkas, sandi.
  */
 class Panel
@@ -58,8 +59,8 @@ class Panel
                 'field' => [
                     ['nama' => 'judul', 'label' => 'Judul tulisan', 'tipe' => 'teks', 'bagian' => 'Isi tulisan', 'wajib' => true, 'rules' => ['required', 'max:200'], 'lebar' => 'penuh'],
                     ['nama' => 'slug', 'label' => 'Slug (alamat)', 'tipe' => 'teks', 'bagian' => 'Isi tulisan', 'rules' => ['nullable', 'max:200'], 'bantuan' => 'Kosongkan agar dibuat otomatis dari judul.'],
-                    ['nama' => 'isi', 'label' => 'Isi tulisan', 'tipe' => 'teks-panjang', 'bagian' => 'Isi tulisan', 'rules' => ['nullable'], 'baris' => 16, 'lebar' => 'penuh', 'editor' => true,
-                        'bantuan' => 'Tombol menyisipkan penanda teks: ## sub-judul, **tebal**, *miring*, - daftar, > kutipan, [teks](tautan). Dirapikan otomatis saat tampil di situs.'],
+                    ['nama' => 'isi', 'label' => 'Isi tulisan', 'tipe' => 'teks-panjang', 'bagian' => 'Isi tulisan', 'rules' => ['nullable'], 'baris' => 16, 'lebar' => 'penuh', 'kaya' => true,
+                        'bantuan' => 'Editor lengkap seperti di masfahri.online: gaya & ukuran huruf, tebal/miring, judul, daftar, kutipan, tautan, gambar, tabel. Tombol </> untuk melihat atau menulis HTML langsung.'],
                     ['nama' => 'terbit_at', 'label' => 'Terbit pada', 'tipe' => 'tanggal-waktu', 'bagian' => 'Publikasi', 'rules' => ['nullable', 'date'],
                         'bantuan' => 'Kosongkan = simpan sebagai draf (belum tampil di situs).'],
                     ['nama' => 'kategori_ids', 'label' => 'Kategori', 'tipe' => 'pilihan-banyak', 'bagian' => 'Publikasi', 'relasi' => 'kategoriBanyak',
@@ -67,6 +68,13 @@ class Panel
                     ['nama' => 'gambar_path', 'label' => 'Gambar sampul (1:1)', 'tipe' => 'berkas', 'bagian' => 'Publikasi', 'lebar' => 'penuh', 'mode' => 'potong',
                         'rules' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
                         'bantuan' => 'Tampil sebagai gambar sampul di kartu berita beranda & arsip.'],
+                    ['nama' => 'kirim_wa', 'label' => 'Kirim update ke kontak WhatsApp', 'tipe' => 'saklar', 'bagian' => 'Kirim ke WhatsApp',
+                        'tanpa_simpan' => true, 'lebar' => 'penuh',
+                        'bantuan' => 'Pesan berisi judul + tautan tulisan ini. Isi pesannya bisa diubah di Pusat WhatsApp → Aturan notifikasi.'],
+                    ['nama' => 'wa_grup', 'label' => 'Kirim ke kelompok', 'tipe' => 'pilihan', 'bagian' => 'Kirim ke WhatsApp',
+                        'tanpa_simpan' => true, 'lebar' => 'penuh',
+                        'opsi' => ['subscriber' => 'Subscribers (semua kontak)', 'admin' => 'Admin saja', 'semua' => 'Subscribers + Admin'],
+                        'bantuan' => 'Dipakai bila centang di atas aktif.'],
                     ['nama' => 'ringkasan', 'label' => 'Ringkasan (opsional)', 'tipe' => 'teks-panjang', 'bagian' => 'Ringkasan (opsional)', 'rules' => ['nullable', 'max:500'], 'baris' => 3, 'lebar' => 'penuh',
                         'bantuan' => 'Tampil pada kartu berita di beranda. Bila kosong, diambil dari awal isi tulisan.'],
                 ],
@@ -113,8 +121,10 @@ class Panel
                     ['nama' => 'slug', 'label' => 'Slug (alamat)', 'tipe' => 'teks', 'rules' => ['nullable', 'max:200'], 'bantuan' => 'mis. profil-musholla → /profil-musholla'],
                     ['nama' => 'urutan_menu', 'label' => 'Urutan menu', 'tipe' => 'angka', 'rules' => ['nullable', 'integer', 'min:0']],
                     ['nama' => 'tampil_di_menu', 'label' => 'Tampilkan di menu situs', 'tipe' => 'saklar', 'rules' => ['nullable', 'boolean']],
+                    ['nama' => 'sapu_warisan', 'label' => 'Bersihkan sisa gaya WordPress', 'tipe' => 'saklar', 'rules' => ['nullable', 'boolean'], 'bantuan' => 'Nyalakan hanya untuk isi lama dari WordPress. Untuk isi yang ditulis di panel ini, matikan agar judul, daftar, dan tautan tidak ikut disapu.'],
                     ['nama' => 'ringkasan', 'label' => 'Ringkasan', 'tipe' => 'teks-panjang', 'rules' => ['nullable', 'max:500'], 'baris' => 2, 'lebar' => 'penuh'],
-                    ['nama' => 'isi', 'label' => 'Isi halaman', 'tipe' => 'teks-panjang', 'rules' => ['nullable'], 'baris' => 16, 'lebar' => 'penuh'],
+                    ['nama' => 'isi', 'label' => 'Isi halaman', 'tipe' => 'teks-panjang', 'rules' => ['nullable'], 'baris' => 16, 'lebar' => 'penuh', 'kaya' => true,
+                        'bantuan' => 'Editor lengkap (gaya huruf, daftar, tautan, tabel). Tombol </> untuk melihat atau menulis HTML langsung.'],
                     ['nama' => 'meta_judul', 'label' => 'Meta judul (SEO)', 'tipe' => 'teks', 'rules' => ['nullable', 'max:200']],
                     ['nama' => 'meta_deskripsi', 'label' => 'Meta deskripsi (SEO)', 'tipe' => 'teks', 'rules' => ['nullable', 'max:300']],
                     ['nama' => 'terbit_at', 'label' => 'Terbit mulai', 'tipe' => 'tanggal-waktu', 'rules' => ['nullable', 'date'], 'bantuan' => 'Kosongkan = belum terbit (tidak tampil di situs).'],
@@ -189,18 +199,30 @@ class Panel
                 'urut' => ['urutan' => 'asc', 'id' => 'asc'],
                 'kolom' => [
                     ['nama' => 'nama', 'label' => 'Program'],
+                    ['nama' => 'jumlah', 'label' => 'Jumlah'],
                     ['nama' => 'target', 'label' => 'Target', 'tipe' => 'uang'],
                     ['nama' => 'terkumpul', 'label' => 'Terkumpul', 'tipe' => 'uang'],
                     ['nama' => 'aktif', 'label' => 'Aktif', 'tipe' => 'saklar'],
                 ],
                 'field' => [
                     ['nama' => 'nama', 'label' => 'Nama program', 'tipe' => 'teks', 'wajib' => true, 'rules' => ['required', 'max:200'], 'lebar' => 'penuh'],
-                    ['nama' => 'target', 'label' => 'Target dana (Rp)', 'tipe' => 'uang', 'rules' => ['nullable', 'numeric', 'min:0'], 'lebar' => 'penuh'],
+                    ['nama' => 'slug', 'label' => 'Alamat halaman (slug)', 'tipe' => 'teks', 'rules' => ['nullable', 'max:120'],
+                        'bantuan' => 'Dipakai untuk alamat /wakaf/<slug>. Kosongkan agar dibuat otomatis dari nama program, mis. wakaf-rak-buku.'],
+                    ['nama' => 'target', 'label' => 'Target dana (Rp)', 'tipe' => 'uang', 'rules' => ['nullable', 'numeric', 'min:0'], 'lebar' => 'penuh',
+                        'bantuan' => 'Kosongkan bila ingin dihitung otomatis dari jumlah × harga satuan.'],
                     ['nama' => 'terkumpul', 'label' => 'Dana terkumpul (Rp)', 'tipe' => 'uang', 'rules' => ['nullable', 'numeric', 'min:0'], 'lebar' => 'penuh'],
                     ['nama' => 'urutan', 'label' => 'Urutan', 'tipe' => 'angka', 'rules' => ['nullable', 'integer']],
                     ['nama' => 'aktif', 'label' => 'Tampilkan di situs', 'tipe' => 'saklar', 'rules' => ['nullable', 'boolean']],
                     ['nama' => 'keterangan', 'label' => 'Keterangan', 'tipe' => 'teks-panjang', 'rules' => ['nullable'], 'baris' => 5, 'lebar' => 'penuh'],
-                    ['nama' => 'gambar_path', 'label' => 'Gambar', 'tipe' => 'berkas', 'rules' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'], 'lebar' => 'penuh'],
+                    ['nama' => 'jumlah', 'label' => 'Jumlah barang', 'tipe' => 'angka', 'rules' => ['nullable', 'integer', 'min:1'],
+                        'bantuan' => 'Bila yang diwakafkan lebih dari satu barang, tulis jumlahnya (mis. 3). Biarkan kosong bila satu barang.'],
+                    ['nama' => 'satuan', 'label' => 'Satuan', 'tipe' => 'teks', 'rules' => ['nullable', 'max:30'],
+                        'bantuan' => 'Mis. unit, buah, sak, karung, lusin.'],
+                    ['nama' => 'harga_satuan', 'label' => 'Harga per satuan (Rp)', 'tipe' => 'uang', 'rules' => ['nullable', 'numeric', 'min:0'],
+                        'bantuan' => 'Bila diisi bersama jumlah, target dana dihitung otomatis (jumlah × harga satuan).'],
+                    ['nama' => 'gambar_path', 'label' => 'Gambar (1:1)', 'tipe' => 'berkas', 'mode' => 'potong', 'lebar' => 'penuh',
+                        'rules' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+                        'bantuan' => 'Tampil sebagai gambar program di beranda & halaman berinfaq. Hasil dipotong persegi (1:1).'],
                 ],
             ],
 

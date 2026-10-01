@@ -28,6 +28,18 @@
             @endforeach
         </div>
 
+        <div class="pemisah"></div>
+        <div class="kartu-kepala">
+            <h3>Pilihan tujuan infaq</h3>
+        </div>
+        <p style="margin:-.35rem 0 1rem;font-size:.84rem;color:var(--tinta-muda)">
+            Satu kategori per baris. Muncul di formulir publik <strong>/mari-berinfaq</strong>, di atas program wakaf.
+        </p>
+        <div class="bidang lebar-penuh">
+            <label for="p-infaq_kategori">Kategori infaq</label>
+            <textarea id="p-infaq_kategori" name="isi[{{ \App\Models\Pengaturan::KUNCI_KATEGORI_INFAQ }}]" rows="4">{{ $kategoriInfaq }}</textarea>
+        </div>
+
         @if (! empty($tambahan))
             <div class="pemisah"></div>
             <div class="kartu-kepala">

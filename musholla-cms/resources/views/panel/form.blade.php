@@ -32,6 +32,19 @@
                 $nilaiLama = old($nama, $baru ? null : data_get($rekaman, $nama));
                 $lebar = ($f['lebar'] ?? '') === 'penuh' ? ' lebar-penuh' : '';
                 $bagian = $f['bagian'] ?? null;
+
+                // Editor kaya (TinyMCE) untuk isi yang ditulis di panel. Isi lama
+                // warisan WordPress JANGAN dibuka di editor — tag & atributnya
+                // tidak dikenal editor sehingga isinya rusak diam-diam.
+                $kaya = ! empty($f['kaya']) && ! \App\Support\HtmlAman::warisan($nilaiLama);
+                $warisan = ! empty($f['kaya']) && \App\Support\HtmlAman::warisan($nilaiLama);
+                if (! empty($f['kaya']) && is_string($nilaiLama) && \App\Support\HtmlAman::berkodeKaya($nilaiLama)) {
+                    $nilaiLama = \App\Support\HtmlAman::isi($nilaiLama);
+                } elseif (! empty($f['kaya']) && is_string($nilaiLama) && $nilaiLama !== '' && ! str_contains($nilaiLama, '<')) {
+                    // Teks lama berpola marka (## sub-judul, **tebal**, - daftar) atau
+                    // teks polos: ubah dulu jadi HTML supaya tampil rapi di editor.
+                    $nilaiLama = \App\Support\Tulis::keHtml($nilaiLama);
+                }
             @endphp
 
             {{-- pembuka bagian (bila formulir memakai pengelompokan) --}}
@@ -113,6 +126,15 @@
 
                     @switch($f['tipe'])
                         @case('teks-panjang')
+                            @if ($kaya)
+                                @include('panel._editor-kaya', ['nama' => $nama, 'nilai' => $nilaiLama, 'baris' => $f['baris'] ?? 14])
+                            @elseif ($warisan)
+                                <textarea id="f-{{ $nama }}" name="{{ $nama }}" rows="{{ $f['baris'] ?? 10 }}">{{ $nilaiLama }}</textarea>
+                                <span class="bantuan">Isi lama dari WordPress ditampilkan sebagai HTML mentah agar tidak rusak saat disunting. Untuk tulisan baru, isinya sudah memakai editor lengkap.</span>
+                                @if (! empty($f['editor']))
+                                    <span class="bantuan">{{ $f['bantuan'] ?? '' }}</span>
+                                @endif
+                            @else
                             @if (! empty($f['editor']))
                                 <div class="editor-alat" data-editor-alat data-sasaran="f-{{ $nama }}">
                                     <button type="button" data-awalan="## " title="Jadikan sub-judul">Sub-judul</button>
@@ -124,6 +146,7 @@
                                 </div>
                             @endif
                             <textarea id="f-{{ $nama }}" name="{{ $nama }}" rows="{{ $f['baris'] ?? 5 }}">{{ $nilaiLama }}</textarea>
+                            @endif
                             @break
 
                         @case('pilihan')
@@ -254,3 +277,61 @@
         });
     </script>
 @endpush
+
+@push('skrip')
+    <script src="{{ asset('vendor/tinymce/tinymce.min.js') }}"></script>
+    <script>
+    (function () {
+        var kotak = document.querySelectorAll('textarea[data-kaya]');
+        if (!kotak.length) { return; }
+
+        function keB64(teks) {
+            var bita = new TextEncoder().encode(teks);
+            var jelma = '';
+            for (var i = 0; i < bita.length; i++) { jelma += String.fromCharCode(bita[i]); }
+            return btoa(jelma);
+        }
+
+        function pasang() {
+            if (!window.tinymce) { return; }
+
+            window.tinymce.init({
+                selector: 'textarea[data-kaya]',
+                height: 560,
+                menubar: 'edit insert format view',
+                plugins: 'code link lists image table media wordcount autolink fullscreen preview searchreplace visualblocks anchor',
+                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table blockquote hr | removeformat code fullscreen preview',
+                toolbar_mode: 'wrap',
+                branding: false,
+                promotion: false,
+                relative_urls: false,
+                convert_urls: false,
+                font_family_formats: 'Bawaan Al Karim=system-ui,Segoe UI,Roboto,sans-serif;Georgia=Georgia,serif;Times New Roman=Times New Roman,serif;Verdana=Verdana,sans-serif;Tahoma=Tahoma,sans-serif;Courier New=Courier New,monospace;Amiri (Arab)=Amiri,serif',
+                font_size_formats: '13px 14px 15px 16px 18px 20px 24px 28px 32px',
+                block_formats: 'Paragraf=p;Judul 2=h2;Judul 3=h3;Judul 4=h4;Kutipan=blockquote;Puisi=pre',
+                content_style: 'body{font-family:system-ui,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.75;color:#1e3a2c}h2,h3,h4{color:#14532d}a{color:#0f766e}',
+                setup: function (ed) {
+                    ed.on('change keyup undo redo', function () { ed.save(); });
+                }
+            });
+
+            var borang = kotak[0].closest('form');
+            if (!borang) { return; }
+            borang.addEventListener('submit', function () {
+                if (window.tinymce) { window.tinymce.triggerSave(); }
+                kotak.forEach(function (t) {
+                    if (t.value === '') { return; }
+                    t.value = 'b64:' + keB64(t.value);
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', pasang);
+        } else {
+            pasang();
+        }
+    })();
+    </script>
+@endpush
+

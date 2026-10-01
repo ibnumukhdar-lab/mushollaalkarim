@@ -28,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('panel-filament')
             ->brandName('Al Karim — Kelola')
+            ->favicon('/favicon-alkarim.ico')
             ->login()
             ->colors([
                 'primary' => Color::hex('#1f3a5f'),

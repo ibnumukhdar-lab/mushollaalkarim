@@ -18,10 +18,12 @@ class Page extends Model
         'meta_judul',
         'meta_deskripsi',
         'terbit_at',
+        'sapu_warisan',
     ];
 
     protected $casts = [
         'terbit_at' => 'datetime',
         'tampil_di_menu' => 'boolean',
+        'sapu_warisan' => 'boolean',
     ];
 }

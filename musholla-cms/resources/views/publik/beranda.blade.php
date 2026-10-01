@@ -1,11 +1,18 @@
 @extends('layouts.publik')
 
+@php
+    // Sumber tunggal: tabel pengaturan (kunci alamat). Layout mengisi $alamatSitus
+    // hanya untuk bagian layout (kaki situs), jadi beranda menyiapkannya sendiri.
+    $alamatSitus = trim((string) ($pengaturan['alamat'] ?? ''));
+@endphp
+
 @section('judul', ($pengaturan['nama_situs'] ?? 'Musholla Al Karim').' — '.($pengaturan['slogan'] ?? 'Kajian & Pendidikan Al-Qur\'an'))
 
 @section('isi')
     <section class="pahlawan">
         <h1>{{ $pengaturan['nama_situs'] ?? 'Musholla Al Karim' }}</h1>
         <p>{{ $pengaturan['slogan'] ?? 'Mari makmurkan masjid — kajian rutin, pendidikan Al-Qur\'an, dan kegiatan sosial umat.' }}</p>
+        @if ($alamatSitus) <p class="alamat-singkat">{{ $alamatSitus }}</p> @endif
         <div class="aksi">
             <a class="tombol" href="/mari-berinfaq">Mari Berinfaq</a>
             <a class="tombol garis" href="/laporan-kas">Laporan Keuangan</a>
@@ -43,6 +50,9 @@
                                 @endif
                             </span>
                         </a>
+
+                        @php $tksBagikan = $b->judul."\n".url('/berita/'.$b->slug); @endphp
+                        <a class="bagikan-wa" href="https://wa.me/?text={{ rawurlencode($tksBagikan) }}" target="_blank" rel="noopener" title="Bagikan ke WhatsApp" aria-label="Bagikan ke WhatsApp">@include('publik._ikon', ['nama' => 'wa'])</a>
                     </article>
                 @endforeach
             </div>
@@ -51,7 +61,7 @@
     @endif
 
     @if (! empty($programHari) && $programHari['data']->isNotEmpty())
-        <h2 class="bagian">Program Sepekan</h2>
+        <h2 class="bagian" id="program-sepekan">Program Sepekan</h2>
         <p class="bagian-ket">Kegiatan rutin musholla setiap hari — silakan hadir dan makmurkan bersama.</p>
         <div class="jaring jadwal" style="margin-bottom:1.6rem">
             @foreach ($programHari['urut'] as $hari)
@@ -80,6 +90,15 @@
                     @empty
                         <p class="jadwal-kosong">Belum ada kegiatan terjadwal.</p>
                     @endforelse
+                    @php
+                        $tksHari = \App\Services\WhatsApp::teksAgenda(
+                            $hari,
+                            $daftarKegiatan,
+                            $pengaturan['nama_situs'] ?? 'Musholla Al Karim',
+                            url('/').'#program-sepekan'
+                        );
+                    @endphp
+                    <a class="bagikan-wa" href="https://wa.me/?text={{ rawurlencode($tksHari) }}" target="_blank" rel="noopener" title="Bagikan agenda {{ $hari }} ke WhatsApp" aria-label="Bagikan agenda {{ $hari }} ke WhatsApp">@include('publik._ikon', ['nama' => 'wa'])</a>
                 </div>
             @endforeach
         </div>
@@ -113,15 +132,34 @@
         <h2 class="bagian">Program & Wakaf</h2>
         <div class="jaring dua">
             @foreach ($wakaf as $w)
-                <div class="kartu">
-                    <h3>{{ $w->nama }}</h3>
+                <div class="kartu kartu-wakaf">
+                    @if ($w->gambar_url)
+                        <a class="wakaf-tautan" href="{{ $w->tautan }}">
+                            <img class="wakaf-gambar" src="{{ $w->gambar_url }}" alt="Gambar {{ $w->nama }}" loading="lazy">
+                        </a>
+                    @endif
+                    <h3><a class="wakaf-tautan" href="{{ $w->tautan }}">{{ $w->nama }}</a></h3>
+                    @if ($w->ringkas_barang)
+                        <p class="wakaf-barang">{{ $w->ringkas_barang }}@if ($w->jumlah > 1 && $w->target > 0) — total Rp{{ number_format((float) $w->target, 0, ',', '.') }}@endif</p>
+                    @endif
                     <p>{{ \Illuminate\Support\Str::limit(strip_tags((string) $w->keterangan), 160) }}</p>
                     @if ($w->target > 0)
-                        <p>
+                        <div style="height:8px;border-radius:6px;background:var(--hijau-muda);margin:.7rem 0 .4rem;overflow:hidden">
+                            <span style="display:block;height:100%;width:{{ $w->persen }}%;background:var(--hijau-lembut)"></span>
+                        </div>
+                        <p style="margin:0">
                             Terkumpul <strong>Rp{{ number_format((float) $w->terkumpul, 0, ',', '.') }}</strong>
-                            dari Rp{{ number_format((float) $w->target, 0, ',', '.') }}
+                            dari Rp{{ number_format((float) $w->target, 0, ',', '.') }} ({{ $w->persen }}%)
                         </p>
                     @endif
+
+                    @php
+                        $tksWakaf = '*Wakaf Musholla Al Karim*'."\n".'*'.$w->nama.'*'
+                            .($w->ringkas_barang ? "\n".$w->ringkas_barang : '')
+                            .($w->target > 0 ? "\nTerkumpul Rp ".number_format((float) $w->terkumpul, 0, ',', '.')." dari Rp ".number_format((float) $w->target, 0, ',', '.').' ('.$w->persen.'%)' : '')
+                            ."\n\nMari ikut berwakaf:\n".$w->tautan;
+                    @endphp
+                    <a class="bagikan-wa" href="https://wa.me/?text={{ rawurlencode($tksWakaf) }}" target="_blank" rel="noopener" title="Bagikan {{ $w->nama }} ke WhatsApp" aria-label="Bagikan ke WhatsApp">@include('publik._ikon', ['nama' => 'wa'])</a>
                 </div>
             @endforeach
         </div>

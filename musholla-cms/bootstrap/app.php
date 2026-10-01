@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => route('masuk'));
         $middleware->redirectUsersTo(fn () => route('anggota'));
 
+        // Endpoint penerbitan bot: tanpa sesi peramban, token sendiri di header X-Token.
+        $middleware->validateCsrfTokens(except: ['api/tulis']);
+
         $middleware->alias([
             'panel.admin' => App\Http\Middleware\PanelAdmin::class,
         ]);

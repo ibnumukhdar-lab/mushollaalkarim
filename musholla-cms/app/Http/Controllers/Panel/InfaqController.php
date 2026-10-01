@@ -4,56 +4,52 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Infaq;
-use App\Models\Kas;
+use App\Models\WakafProgram;
 use Illuminate\Http\Request;
 
 /**
  * Tindakan cepat modul Infaq: verifikasi (sekaligus mencatat ke kas) dan tolak.
+ *
+ * Controller ini TIDAK menulis ke tabel kas sendiri — seluruh aturan pencatatan
+ * ada di SATU tempat: Infaq::verifikasi() dan Infaq::tolak() (dipakai juga oleh
+ * observer dan panel Filament).
  */
 class InfaqController extends Controller
 {
-    /** Verifikasi infaq → otomatis membuat catatan kas masuk. */
+    /** Verifikasi infaq → mencatat ke kas lewat jalur satu-pintu di model. */
     public function verifikasi(Request $request, int $id)
     {
         $infaq = Infaq::query()->findOrFail($id);
 
-        $infaq->status = 'terverifikasi';
-        $infaq->diverifikasi_oleh = $request->user()->id;
-        $infaq->save();
+        $kas = $infaq->verifikasi($request->user()->id);
 
-        // Catat ke kas bila belum pernah dicatat (anti dobel).
-        $sudahAda = Kas::query()
-            ->where('jenis', 'masuk')
-            ->where('jumlah', $infaq->nominal)
-            ->whereDate('tanggal', $infaq->tanggal)
-            ->where('keterangan', 'like', 'Infaq dari ' . $infaq->nama_donatur . '%')
-            ->exists();
-
-        if (! $sudahAda) {
-            Kas::query()->create([
-                'tanggal' => $infaq->tanggal ?? now()->toDateString(),
-                'jenis' => 'masuk',
-                'kategori' => 'Infaq' . ($infaq->tujuan ? ' — ' . $infaq->tujuan : ''),
-                'jumlah' => $infaq->nominal,
-                'keterangan' => 'Infaq dari ' . $infaq->nama_donatur . ($infaq->keterangan ? ' — ' . $infaq->keterangan : ''),
-                'bukti_path' => $infaq->bukti_path,
-                'dicatat_oleh' => $request->user()->id,
-            ]);
+        if (! $kas) {
+            return redirect()->route('panel.daftar', 'infaq')->with(
+                'sukses',
+                'Infaq '.$infaq->nama_donatur.' sudah tercatat di kas sebelumnya — tidak dicatat dua kali.'
+            );
         }
 
-        return redirect()->route('panel.daftar', 'infaq')
-            ->with('sukses', 'Infaq ' . $infaq->nama_donatur . ' diverifikasi dan dicatat ke kas.');
+        $pesan = 'Infaq '.$infaq->nama_donatur.' diverifikasi dan dicatat ke kas.';
+
+        $program = WakafProgram::untukTujuan($infaq->tujuan);
+        if ($program) {
+            $pesan .= ' Kemajuan '.$program->nama.' kini Rp '
+                .number_format((float) $program->terkumpul, 0, ',', '.')
+                .' ('.$program->persen.'%).';
+        }
+
+        return redirect()->route('panel.daftar', 'infaq')->with('sukses', $pesan);
     }
 
-    /** Tolak infaq (tidak dicatat ke kas). */
+    /** Tolak / batalkan infaq — baris kas tertaut ikut dibuang lewat model. */
     public function tolak(Request $request, int $id)
     {
         $infaq = Infaq::query()->findOrFail($id);
-        $infaq->status = 'ditolak';
-        $infaq->diverifikasi_oleh = $request->user()->id;
-        $infaq->save();
+
+        $hasil = $infaq->tolak($request->user()->id);
 
         return redirect()->route('panel.daftar', 'infaq')
-            ->with('sukses', 'Infaq ' . $infaq->nama_donatur . ' ditandai ditolak.');
+            ->with($hasil['berhasil'] ? 'sukses' : 'galat', $hasil['pesan']);
     }
 }

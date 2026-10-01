@@ -17,11 +17,13 @@ class Berita extends Model
         'kategori',
         'gambar_path',
         'terbit_at',
-        'penulis_id',
+        'penulis_id',        'push_pada',
+
     ];
 
     protected $casts = [
-        'terbit_at' => 'datetime',
+        'terbit_at' => 'datetime',        'push_pada' => 'datetime',
+
     ];
 
     public function penulis()
